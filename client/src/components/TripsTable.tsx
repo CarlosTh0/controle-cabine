@@ -72,60 +72,121 @@ const TripsTable: React.FC = () => {
         </button>
       </div>
       
-      {/* Create Trip Form */}
+      {/* Create Trip Form - Popup simplificado */}
       {showCreateForm && (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Criar Nova Viagem
-            </h3>
-            <button
-              type="button"
-              className="text-gray-400 hover:text-gray-500"
-              onClick={() => setShowCreateForm(false)}
-            >
-              <span className="sr-only">Fechar</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div className="sm:col-span-3">
-                <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
-                  Selecione um PRE-BOX livre
-                </label>
-                <select
-                  id="pre-box"
-                  name="pre-box"
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  value={selectedPreBox}
-                  onChange={(e) => setSelectedPreBox(e.target.value)}
-                >
-                  <option value="">Selecione um PRE-BOX</option>
-                  {availablePreBoxes.map((preBox) => (
-                    <option key={preBox.id} value={preBox.id}>
-                      PRE-BOX {preBox.id}
-                    </option>
-                  ))}
-                </select>
-                {availablePreBoxes.length === 0 && (
-                  <p className="mt-2 text-sm text-red-600">
-                    Não há PRE-BOXes livres. Vá para "Gerenciar PRE-BOX" para adicionar ou liberar um.
-                  </p>
-                )}
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Nova Viagem
+                  </h3>
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-500"
+                    onClick={() => setShowCreateForm(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="mt-4">
+                  <div className="grid grid-cols-1 gap-y-4">
+                    {/* Data e Hora atuais (já preenchidas) */}
+                    <div className="flex flex-wrap gap-4">
+                      <div className="w-full sm:w-auto flex-1">
+                        <label className="block text-sm font-medium text-gray-700">Data</label>
+                        <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
+                          {getCurrentDate()}
+                        </div>
+                      </div>
+                      <div className="w-full sm:w-auto flex-1">
+                        <label className="block text-sm font-medium text-gray-700">Hora</label>
+                        <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
+                          {getCurrentTime()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Seleção de PRE-BOX */}
+                    <div>
+                      <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
+                        PRE-BOX Livre
+                      </label>
+                      <select
+                        id="pre-box"
+                        name="pre-box"
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        value={selectedPreBox}
+                        onChange={(e) => setSelectedPreBox(e.target.value)}
+                      >
+                        <option value="">Selecione um PRE-BOX</option>
+                        {availablePreBoxes.map((preBox) => (
+                          <option key={preBox.id} value={preBox.id}>
+                            PRE-BOX {preBox.id}
+                          </option>
+                        ))}
+                      </select>
+                      {availablePreBoxes.length === 0 && (
+                        <p className="mt-2 text-sm text-red-600">
+                          Não há PRE-BOXes livres disponíveis.
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Informações adicionais opcionais */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="box-d" className="block text-sm font-medium text-gray-700">
+                          BOX-D (opcional)
+                        </label>
+                        <input
+                          type="text"
+                          id="box-d"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={tripData.boxD}
+                          onChange={(e) => setTripData({...tripData, boxD: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                          Quantidade (opcional)
+                        </label>
+                        <input
+                          type="text"
+                          id="quantity"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={tripData.quantity}
+                          onChange={(e) => setTripData({...tripData, quantity: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="mt-5 sm:mt-6">
-              <button
-                type="button"
-                className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
-                onClick={handleCreateTrip}
-                disabled={!selectedPreBox}
-              >
-                Criar Viagem
-              </button>
+              
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={handleSubmitTrip}
+                  disabled={!selectedPreBox}
+                >
+                  Criar Viagem
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => setShowCreateForm(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         </div>
