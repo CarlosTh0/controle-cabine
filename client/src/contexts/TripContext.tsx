@@ -57,7 +57,7 @@ export interface TripContextType {
   handleToggleStatus: (id: string) => void;
   handleDeletePreBox: (id: string) => void;
   handleLinkTrip: (preBoxId: string) => void;
-  handleCreateTrip: (preBoxId: string, tripData?: any) => void;
+  handleCreateTrip: (preBoxId: string, tripData?: any, directToBoxD?: boolean) => boolean;
   handleUpdateTrip: (tripId: string, updatedFields: Partial<Trip>) => void;
   handleDeleteTrip: (tripId: string) => void;
   showConfirmModal: (action: ModalAction) => void;
@@ -277,7 +277,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   };
 
   // Create trip with custom data
-  const handleCreateTrip = (preBoxId: string, tripData?: any) => {
+  const handleCreateTrip = (preBoxId: string, tripData?: any, directToBoxD: boolean = false) => {
     try {
       // Use the user-provided ID or generate a new one
       const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
@@ -291,16 +291,19 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         return false;
       }
       
-      // Check if PRE-BOX exists and is available
-      const preBox = preBoxes.find(pb => pb.id === preBoxId);
-      if (!preBox) {
-        setError(`PRE-BOX ${preBoxId} não encontrado.`);
-        return false;
-      }
-      
-      if (preBox.status !== "LIVRE") {
-        setError(`PRE-BOX ${preBoxId} não está livre.`);
-        return false;
+      // Se não for criação direta para BOX-D, verificar o PRE-BOX
+      if (!directToBoxD) {
+        // Check if PRE-BOX exists and is available
+        const preBox = preBoxes.find(pb => pb.id === preBoxId);
+        if (!preBox) {
+          setError(`PRE-BOX ${preBoxId} não encontrado.`);
+          return false;
+        }
+        
+        if (preBox.status !== "LIVRE") {
+          setError(`PRE-BOX ${preBoxId} não está livre.`);
+          return false;
+        }
       }
       
       // Create new trip with custom data
@@ -309,7 +312,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         date: formatDate(today),
         time: formatTime(today),
         oldTrip: tripData?.oldTrip || "",
-        preBox: preBoxId,
+        preBox: directToBoxD ? "" : preBoxId, // Se for direto para BOX-D, não associamos a um PRE-BOX
         boxD: tripData?.boxD || "",
         quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
         shift: tripData?.shift || "1",
@@ -318,32 +321,35 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         manifestDate: formatDate(tomorrow)
       };
       
-      // Update trips
+      // Adicionar a viagem
       setTrips(prev => [...prev, newTrip]);
       
-      // Update PRE-BOX status
-      const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
-      
-      setPreBoxes(prev => prev.map(preBox => {
-        if (preBox.id === preBoxId) {
-          if (newStatus === "LIVRE") {
-            // If BOX-D is filled, remove the trip reference but keep the history
-            return {
-              ...preBox,
-              status: newStatus,
-              tripId: undefined
-            };
-          } else {
-            // Otherwise, link the trip to the PRE-BOX
-            return {
-              ...preBox,
-              status: newStatus,
-              tripId: tripId
-            };
+      // Se for criação direta para BOX-D, não atualizar PRE-BOX
+      if (!directToBoxD) {
+        // Update PRE-BOX status
+        const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
+        
+        setPreBoxes(prev => prev.map(preBox => {
+          if (preBox.id === preBoxId) {
+            if (newStatus === "LIVRE") {
+              // If BOX-D is filled, remove the trip reference but keep the history
+              return {
+                ...preBox,
+                status: newStatus,
+                tripId: undefined
+              };
+            } else {
+              // Otherwise, link the trip to the PRE-BOX
+              return {
+                ...preBox,
+                status: newStatus,
+                tripId: tripId
+              };
+            }
           }
-        }
-        return preBox;
-      }));
+          return preBox;
+        }));
+      }
       
       console.log("Viagem criada com sucesso:", newTrip);
       setError(""); // Clear any previous error

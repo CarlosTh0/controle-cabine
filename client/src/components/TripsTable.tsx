@@ -10,14 +10,16 @@ const TripsTable: React.FC = () => {
   const [editingCell, setEditingCell] = useState<{tripId: string, field: string} | null>(null);
   const [editValue, setEditValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [createDirectToBoxD, setCreateDirectToBoxD] = useState(false);
   const [tripData, setTripData] = useState({
-    id: "", // Adicionando campo para o ID da viagem
+    id: "",
     oldTrip: "",
     boxD: "",
     quantity: "",
     shift: "1",
     region: "Sul",
-    status: "Completa"
+    status: "Completa",
+    viagem: "" // Campo para VIAGEM
   });
   
   // Filtrar apenas PRE-BOXes com status LIVRE
@@ -38,32 +40,41 @@ const TripsTable: React.FC = () => {
   };
 
   // Função para criar viagem com os dados do form
-  const handleSubmitTrip = () => {
-    if (selectedPreBox) {
-      // Criar nova viagem com os dados do formulário
-      handleQuickCreateTrip();
-      setShowCreateForm(false);
-      setSelectedPreBox("");
-      setTripData({
-        id: "",
-        oldTrip: "",
-        boxD: "",
-        quantity: "",
-        shift: "1",
-        region: "Sul",
-        status: "Completa"
-      });
+  const handleSubmitTrip = (e?: React.FormEvent) => {
+    if (e) e.preventDefault(); // Impedir recarregar a página
+    
+    if (createDirectToBoxD) {
+      // Criar viagem diretamente para BOX-D sem PRE-BOX
+      // Geramos um ID temporário para PRE-BOX apenas para satisfazer a API
+      const tempPreBoxId = "DIRECT_TO_BOXD";
+      const tripWithBoxD = {
+        ...tripData,
+        // Garantir que o BOX-D esteja preenchido em criação direta
+        boxD: tripData.boxD || `BOX-D_${Math.floor(Math.random() * 10) + 1}`
+      };
+      handleCreateTrip(tempPreBoxId, tripWithBoxD, true); // Novo parâmetro "true" para indicar criação direta
+    } else if (selectedPreBox) {
+      // Criar nova viagem vinculada a um PRE-BOX
+      const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
+      if (preBox && preBox.status === "LIVRE") {
+        handleCreateTrip(selectedPreBox, tripData);
+      }
     }
-  };
-
-  // Função para criar viagem rapidamente
-  const handleQuickCreateTrip = () => {
-    // Criar viagem diretamente sem confirmação
-    const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
-    if (preBox && preBox.status === "LIVRE") {
-      // Usar o método do contexto para criar a viagem
-      handleCreateTrip(selectedPreBox, tripData);
-    }
+    
+    // Limpar form e fechar
+    setShowCreateForm(false);
+    setSelectedPreBox("");
+    setTripData({
+      id: "",
+      oldTrip: "",
+      boxD: "",
+      quantity: "",
+      shift: "1",
+      region: "Sul",
+      status: "Completa",
+      viagem: ""
+    });
+    setCreateDirectToBoxD(false);
   };
   
   // Função para ativar a edição de uma célula
