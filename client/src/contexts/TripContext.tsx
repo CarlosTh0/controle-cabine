@@ -435,8 +435,8 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           title: 'Excluir PRE-BOX',
           message: `Tem certeza que deseja excluir o PRE-BOX ${action.id}?`,
           confirmAction: () => {
+            console.log("Excluindo PRE-BOX:", action.id);
             handleDeletePreBox(action.id);
-            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'delete'
         };
@@ -446,8 +446,8 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           title: 'Excluir Viagem',
           message: `Tem certeza que deseja excluir a viagem ${action.id}?`,
           confirmAction: () => {
+            console.log("Excluindo viagem:", action.id);
             handleDeleteTrip(action.id);
-            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'delete'
         };
@@ -457,8 +457,8 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           title: 'Vincular Viagem',
           message: `Tem certeza que deseja criar uma nova viagem para o PRE-BOX ${action.id}?`,
           confirmAction: () => {
+            console.log("Vinculando viagem ao PRE-BOX:", action.id);
             handleLinkTrip(action.id);
-            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'confirm'
         };
