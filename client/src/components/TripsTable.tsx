@@ -9,6 +9,7 @@ const TripsTable: React.FC = () => {
   const [selectedPreBox, setSelectedPreBox] = useState("");
   const [editingCell, setEditingCell] = useState<{tripId: string, field: string} | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [tripData, setTripData] = useState({
     id: "", // Adicionando campo para o ID da viagem
     oldTrip: "",
@@ -123,6 +124,19 @@ const TripsTable: React.FC = () => {
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
           Nova Viagem
         </button>
+      </div>
+      
+      {/* Campo de pesquisa */}
+      <div className="mb-4">
+        <div className="relative rounded-md shadow-sm">
+          <input
+            type="text"
+            className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Pesquisar por número de viagem ou viagem antiga..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
       
       {/* Create Trip Form - Popup simplificado */}
@@ -369,7 +383,16 @@ const TripsTable: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {trips.map((trip) => (
+                    {/* Filtra as viagens com base no termo de pesquisa */}
+                    {trips.filter(trip => {
+                      if (searchTerm === "") return true;
+                      
+                      const searchLower = searchTerm.toLowerCase();
+                      return (
+                        trip.id.toLowerCase().includes(searchLower) || 
+                        (trip.oldTrip && trip.oldTrip.toLowerCase().includes(searchLower))
+                      );
+                    }).map((trip) => (
                       <tr key={trip.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {trip.date}
@@ -445,11 +468,13 @@ const TripsTable: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {trip.manifestDate}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                           <button
                             type="button"
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => showConfirmModal({ type: 'deleteTrip', id: trip.id })}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md"
+                            onClick={() => {
+                              showConfirmModal({ type: 'deleteTrip', id: trip.id });
+                            }}
                           >
                             Excluir
                           </button>

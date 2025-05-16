@@ -36,6 +36,12 @@ export type ModalContent = {
   type: 'delete' | 'confirm';
 } | null;
 
+// Interface de usuário
+export interface User {
+  username: string;
+  password: string;
+}
+
 // Context interface
 interface TripContextType {
   preBoxes: PreBox[];
@@ -44,6 +50,8 @@ interface TripContextType {
   error: string;
   showModal: boolean;
   modalContent: ModalContent;
+  isAuthenticated: boolean;
+  currentUser: string | null;
   setNewPreBoxId: (id: string) => void;
   handleAddPreBox: () => void;
   handleToggleStatus: (id: string) => void;
@@ -57,6 +65,8 @@ interface TripContextType {
   getPreBoxesCount: () => number;
   getFreePreBoxesCount: () => number;
   getStatusClass: (status: PreBoxStatus) => string;
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
 }
 
 // Create the context
