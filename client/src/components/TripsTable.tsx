@@ -10,6 +10,7 @@ const TripsTable: React.FC = () => {
   const [editingCell, setEditingCell] = useState<{tripId: string, field: string} | null>(null);
   const [editValue, setEditValue] = useState("");
   const [tripData, setTripData] = useState({
+    id: "", // Adicionando campo para o ID da viagem
     oldTrip: "",
     boxD: "",
     quantity: "",
@@ -24,7 +25,10 @@ const TripsTable: React.FC = () => {
   // Obter data e hora atuais formatadas
   const getCurrentDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${day}/${month}/${year}`; // Formato DD/MM/YYYY
   };
 
   const getCurrentTime = () => {
@@ -40,6 +44,7 @@ const TripsTable: React.FC = () => {
       setShowCreateForm(false);
       setSelectedPreBox("");
       setTripData({
+        id: "",
         oldTrip: "",
         boxD: "",
         quantity: "",
@@ -175,6 +180,34 @@ const TripsTable: React.FC = () => {
                     
                     {/* Informações adicionais */}
                     <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="trip-id" className="block text-sm font-medium text-gray-700">
+                          VIAGEM (opcional)
+                        </label>
+                        <input
+                          type="text"
+                          id="trip-id"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={tripData.id}
+                          onChange={(e) => setTripData({...tripData, id: e.target.value})}
+                          placeholder="Número da viagem opcional"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="old-trip" className="block text-sm font-medium text-gray-700">
+                          Viagem Antiga
+                        </label>
+                        <input
+                          type="text"
+                          id="old-trip"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={tripData.oldTrip}
+                          onChange={(e) => setTripData({...tripData, oldTrip: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mt-4">
                       <div>
                         <label htmlFor="box-d" className="block text-sm font-medium text-gray-700">
                           BOX-D

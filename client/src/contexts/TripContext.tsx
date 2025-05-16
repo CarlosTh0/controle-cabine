@@ -262,7 +262,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
   
   // Método para criar viagem diretamente com dados personalizados
   const handleCreateTrip = (preBoxId: string, tripData?: any) => {
-    const tripId = generateTripId();
+    // Usar o ID fornecido pelo usuário ou gerar um novo
+    const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
