@@ -451,6 +451,52 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
   const getFreePreBoxesCount = (): number => 
     preBoxes.filter(pb => pb.status === "LIVRE").length;
 
+  // Funções de autenticação
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  
+  // Verificar autenticação no carregamento
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('isAuthenticated');
+    const savedUser = localStorage.getItem('currentUser');
+    
+    if (savedAuth === 'true' && savedUser) {
+      setIsAuthenticated(true);
+      setCurrentUser(savedUser);
+    }
+  }, []);
+  
+  // Função de login
+  const login = (username: string, password: string): boolean => {
+    // Usuários mockados para demonstração
+    const validUsers = [
+      { username: "admin", password: "admin123" },
+      { username: "operador", password: "operador123" }
+    ];
+    
+    const user = validUsers.find(u => 
+      u.username === username && u.password === password
+    );
+    
+    if (user) {
+      setIsAuthenticated(true);
+      setCurrentUser(username);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('currentUser', username);
+      return true;
+    }
+    
+    return false;
+  };
+  
+  // Função de logout
+  const logout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('currentUser');
+  };
+
   // Create the context value
   const value: TripContextType = {
     preBoxes,
@@ -459,6 +505,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     error,
     showModal,
     modalContent,
+    isAuthenticated,
+    currentUser,
     setNewPreBoxId,
     handleAddPreBox,
     handleToggleStatus,
@@ -472,6 +520,8 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     getPreBoxesCount,
     getFreePreBoxesCount,
     getStatusClass,
+    login,
+    logout
   };
 
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
