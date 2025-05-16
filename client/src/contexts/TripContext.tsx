@@ -358,10 +358,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     if (!tripToDelete) return;
     
     // Remove the trip
-    setTrips(trips.filter(trip => trip.id !== tripId));
+    setTrips(prev => prev.filter(trip => trip.id !== tripId));
     
     // Atualizar os PRE-BOXes que estão usando essa viagem
-    setPreBoxes(preBoxes.map(preBox => {
+    setPreBoxes(prev => prev.map(preBox => {
       if (preBox.id === tripToDelete.preBox && preBox.status === "VIAGEM") {
         // Liberar o PRE-BOX (mudar para status LIVRE)
         return { 
