@@ -1,12 +1,96 @@
+import { useState } from "react";
 import { useTrip } from "../contexts/TripContext";
 import StatusBadge from "./StatusBadge";
+import { PlusIcon } from "lucide-react";
 
 const TripsTable: React.FC = () => {
-  const { trips, showConfirmModal } = useTrip();
+  const { trips, preBoxes, showConfirmModal } = useTrip();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedPreBox, setSelectedPreBox] = useState("");
+  
+  // Filtrar apenas PRE-BOXes com status LIVRE
+  const availablePreBoxes = preBoxes.filter(pb => pb.status === "LIVRE");
+
+  const handleCreateTrip = () => {
+    if (selectedPreBox) {
+      showConfirmModal({ type: 'linkTrip', id: selectedPreBox });
+      setShowCreateForm(false);
+      setSelectedPreBox("");
+    }
+  };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Gestão de Viagens</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Gestão de Viagens</h2>
+        <button
+          type="button"
+          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          onClick={() => setShowCreateForm(!showCreateForm)}
+        >
+          <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+          Nova Viagem
+        </button>
+      </div>
+      
+      {/* Create Trip Form */}
+      {showCreateForm && (
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Criar Nova Viagem
+            </h3>
+            <button
+              type="button"
+              className="text-gray-400 hover:text-gray-500"
+              onClick={() => setShowCreateForm(false)}
+            >
+              <span className="sr-only">Fechar</span>
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+              <div className="sm:col-span-3">
+                <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
+                  Selecione um PRE-BOX livre
+                </label>
+                <select
+                  id="pre-box"
+                  name="pre-box"
+                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={selectedPreBox}
+                  onChange={(e) => setSelectedPreBox(e.target.value)}
+                >
+                  <option value="">Selecione um PRE-BOX</option>
+                  {availablePreBoxes.map((preBox) => (
+                    <option key={preBox.id} value={preBox.id}>
+                      PRE-BOX {preBox.id}
+                    </option>
+                  ))}
+                </select>
+                {availablePreBoxes.length === 0 && (
+                  <p className="mt-2 text-sm text-red-600">
+                    Não há PRE-BOXes livres. Vá para "Gerenciar PRE-BOX" para adicionar ou liberar um.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-5 sm:mt-6">
+              <button
+                type="button"
+                className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm"
+                onClick={handleCreateTrip}
+                disabled={!selectedPreBox}
+              >
+                Criar Viagem
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Trips Table */}
       <div className="flex flex-col">
