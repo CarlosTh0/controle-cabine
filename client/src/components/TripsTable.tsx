@@ -173,7 +173,8 @@ const TripsTable: React.FC = () => {
                   </button>
                 </div>
                 
-                <div className="mt-4">
+                <form onSubmit={(e) => { e.preventDefault(); handleSubmitTrip(); }}>
+                  <div className="mt-4">
                   <div className="grid grid-cols-1 gap-y-4">
                     {/* Data e Hora atuais (já preenchidas) */}
                     <div className="flex flex-wrap gap-4">
@@ -191,31 +192,50 @@ const TripsTable: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Seleção de PRE-BOX */}
-                    <div>
-                      <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
-                        PRE-BOX Livre
-                      </label>
-                      <select
-                        id="pre-box"
-                        name="pre-box"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        value={selectedPreBox}
-                        onChange={(e) => setSelectedPreBox(e.target.value)}
-                      >
-                        <option value="">Selecione um PRE-BOX</option>
-                        {availablePreBoxes.map((preBox) => (
-                          <option key={preBox.id} value={preBox.id}>
-                            PRE-BOX {preBox.id}
-                          </option>
-                        ))}
-                      </select>
-                      {availablePreBoxes.length === 0 && (
-                        <p className="mt-2 text-sm text-red-600">
-                          Não há PRE-BOXes livres disponíveis.
-                        </p>
-                      )}
+                    {/* Opção para criar no BOX-D diretamente */}
+                    <div className="mb-4">
+                      <div className="flex items-center">
+                        <input
+                          id="direct-boxd"
+                          name="direct-boxd"
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={createDirectToBoxD}
+                          onChange={(e) => setCreateDirectToBoxD(e.target.checked)}
+                        />
+                        <label htmlFor="direct-boxd" className="ml-2 block text-sm font-medium text-gray-700">
+                          Criar diretamente para BOX-D (sem PRE-BOX)
+                        </label>
+                      </div>
                     </div>
+                    
+                    {/* Seleção de PRE-BOX se não for direto para BOX-D */}
+                    {!createDirectToBoxD && (
+                      <div>
+                        <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
+                          PRE-BOX Livre
+                        </label>
+                        <select
+                          id="pre-box"
+                          name="pre-box"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={selectedPreBox}
+                          onChange={(e) => setSelectedPreBox(e.target.value)}
+                        >
+                          <option value="">Selecione um PRE-BOX</option>
+                          {availablePreBoxes.map((preBox) => (
+                            <option key={preBox.id} value={preBox.id}>
+                              PRE-BOX {preBox.id}
+                            </option>
+                          ))}
+                        </select>
+                        {availablePreBoxes.length === 0 && (
+                          <p className="mt-2 text-sm text-red-600">
+                            Não há PRE-BOXes livres disponíveis.
+                          </p>
+                        )}
+                      </div>
+                    )}
                     
                     {/* Informações adicionais */}
                     <div className="grid grid-cols-2 gap-4">
