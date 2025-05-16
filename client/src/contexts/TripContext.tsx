@@ -50,6 +50,7 @@ interface TripContextType {
   handleDeletePreBox: (id: string) => void;
   handleLinkTrip: (preBoxId: string) => void;
   handleCreateTrip: (preBoxId: string, tripData?: any) => void;
+  handleUpdateTrip: (tripId: string, updatedFields: Partial<Trip>) => void;
   handleDeleteTrip: (tripId: string) => void;
   showConfirmModal: (action: ModalAction) => void;
   closeModal: () => void;
@@ -211,7 +212,11 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
 
   // Funções auxiliares para formatação de data e hora
   const formatDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    // Formatação DD/MM/YYYY
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
   
   const formatTime = (date: Date): string => {
@@ -262,6 +267,12 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
+    // Verificar se já existe uma viagem com esse ID para evitar duplicatas
+    if (trips.some(trip => trip.id === tripId)) {
+      setError(`Já existe uma viagem com o ID ${tripId}.`);
+      return;
+    }
+    
     // Create new trip with custom data or defaults
     const newTrip: Trip = {
       id: tripId,
@@ -269,7 +280,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       time: formatTime(today),
       oldTrip: tripData?.oldTrip || "",
       preBox: preBoxId,
-      boxD: tripData?.boxD || String(Math.floor(Math.random() * 10) + 1),
+      boxD: tripData?.boxD || "",
       quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
       shift: tripData?.shift || "1",
       region: tripData?.region || "Sul",
@@ -280,18 +291,64 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setTrips([...trips, newTrip]);
     
     // Update PRE-BOX status
+    // Se o BOX-D já estiver preenchido, o PRE-BOX deve ficar LIVRE novamente
+    const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
+    
     setPreBoxes(preBoxes.map(preBox => {
       if (preBox.id === preBoxId) {
-        return {
-          ...preBox,
-          status: "VIAGEM",
-          tripId: tripId
-        };
+        if (newStatus === "LIVRE") {
+          // Se BOX-D está preenchido, remove a referência da viagem mas mantém o histórico
+          return {
+            ...preBox,
+            status: newStatus,
+            tripId: undefined
+          };
+        } else {
+          // Caso contrário, vincula a viagem ao PRE-BOX
+          return {
+            ...preBox,
+            status: newStatus,
+            tripId: tripId
+          };
+        }
       }
       return preBox;
     }));
   };
 
+  // Update trip
+  const handleUpdateTrip = (tripId: string, updatedFields: Partial<Trip>) => {
+    // Verificar se estamos atualizando o BOX-D e se ele está sendo preenchido
+    const tripToUpdate = trips.find(trip => trip.id === tripId);
+    const hasBoxDChanged = updatedFields.boxD !== undefined && 
+                          (!tripToUpdate?.boxD || tripToUpdate.boxD === "") && 
+                          updatedFields.boxD !== "";
+    
+    // Atualizar a viagem
+    setTrips(trips.map(trip => {
+      if (trip.id === tripId) {
+        return { ...trip, ...updatedFields };
+      }
+      return trip;
+    }));
+    
+    // Se BOX-D foi alterado de vazio para preenchido, liberar o PRE-BOX
+    if (hasBoxDChanged && tripToUpdate) {
+      const preBoxId = tripToUpdate.preBox;
+      
+      setPreBoxes(preBoxes.map(preBox => {
+        if (preBox.id === preBoxId && preBox.status === "VIAGEM") {
+          return {
+            ...preBox,
+            status: "LIVRE",
+            tripId: undefined
+          };
+        }
+        return preBox;
+      }));
+    }
+  };
+  
   // Delete trip
   const handleDeleteTrip = (tripId: string) => {
     // Find the PRE-BOX linked to this trip
@@ -393,6 +450,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     handleDeletePreBox,
     handleLinkTrip,
     handleCreateTrip,
+    handleUpdateTrip,
     handleDeleteTrip,
     showConfirmModal,
     closeModal,
