@@ -421,6 +421,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     
     // Close the modal after deletion
     setShowModal(false);
+    setModalContent(null);
   };
 
   // Show confirmation modal
