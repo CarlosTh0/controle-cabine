@@ -77,7 +77,7 @@ const TripsTable: React.FC = () => {
       const { tripId, field } = editingCell;
       
       // Verificar se o campo é BOX-D para aplicar a lógica especial
-      if (field === 'boxD') {
+      if (field === 'boxD' && editValue.trim() !== '') {
         // Se BOX-D está sendo preenchido, aplicar a lógica para liberar o PRE-BOX
         handleUpdateTrip(tripId, { [field]: editValue });
       } else {
@@ -88,6 +88,20 @@ const TripsTable: React.FC = () => {
       // Resetar o estado de edição
       setEditingCell(null);
       setEditValue("");
+    }
+  };
+  
+  // Função para editar diretamente
+  const handleDirectEdit = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, tripId: string, field: string) => {
+    const value = e.target.value;
+    
+    // Atualizar diretamente sem necessidade de confirmar
+    if (field === 'boxD' && value.trim() !== '') {
+      // Aplicar lógica especial para BOX-D
+      handleUpdateTrip(tripId, { [field]: value });
+    } else {
+      // Para outros campos, atualizar diretamente
+      handleUpdateTrip(tripId, { [field]: value });
     }
   };
   
@@ -366,247 +380,67 @@ const TripsTable: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {trip.time}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'oldTrip' ? (
-                            <div className="flex items-center">
-                              <input
-                                type="text"
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              />
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span>{trip.oldTrip || "-"}</span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'oldTrip', trip.oldTrip)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
+                          <input
+                            type="text"
+                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
+                            value={trip.oldTrip || ""}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'oldTrip')}
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <StatusBadge status="VIAGEM" value={trip.preBox} />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'boxD' ? (
-                            <div className="flex items-center">
-                              <input
-                                type="text"
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              />
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span>{trip.boxD || "-"}</span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'boxD', trip.boxD)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                          <input
+                            type="text"
+                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
+                            value={trip.boxD || ""}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'boxD')}
+                            placeholder="BOX-D"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'quantity' ? (
-                            <div className="flex items-center">
-                              <input
-                                type="text"
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              />
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span>{trip.quantity}</span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'quantity', trip.quantity)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                          <input
+                            type="text"
+                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
+                            value={trip.quantity}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'quantity')}
+                            placeholder="Quantidade"
+                          />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'shift' ? (
-                            <div className="flex items-center">
-                              <select
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              >
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                              </select>
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span>{trip.shift}</span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'shift', trip.shift)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                          <select
+                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
+                            value={trip.shift}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'region' ? (
-                            <div className="flex items-center">
-                              <select
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              >
-                                <option value="Norte">Norte</option>
-                                <option value="Sul">Sul</option>
-                                <option value="Leste">Leste</option>
-                                <option value="Oeste">Oeste</option>
-                              </select>
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span>{trip.region}</span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'region', trip.region)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                          <select
+                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
+                            value={trip.region}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
+                          >
+                            <option value="Norte">Norte</option>
+                            <option value="Sul">Sul</option>
+                            <option value="Leste">Leste</option>
+                            <option value="Oeste">Oeste</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap group">
-                          {editingCell?.tripId === trip.id && editingCell.field === 'status' ? (
-                            <div className="flex items-center">
-                              <select
-                                className="block w-full py-1 px-2 border-gray-300 rounded-md text-sm"
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                autoFocus
-                              >
-                                <option value="Completa">Completa</option>
-                                <option value="Incompleta">Incompleta</option>
-                              </select>
-                              <button
-                                onClick={saveEdit}
-                                className="ml-1 text-green-600 hover:text-green-800"
-                                title="Salvar"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={cancelEdit}
-                                className="ml-1 text-red-600 hover:text-red-800"
-                                title="Cancelar"
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${trip.status === "Completa" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                                {trip.status}
-                              </span>
-                              <button
-                                onClick={() => startEditing(trip.id, 'status', trip.status)}
-                                className="ml-2 text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Editar"
-                              >
-                                <Edit size={14} />
-                              </button>
-                            </div>
-                          )}
+                          <select
+                            className={`w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded ${trip.status === "Completa" ? "text-green-800" : "text-yellow-800"}`}
+                            value={trip.status}
+                            onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
+                          >
+                            <option value="Completa" className="text-green-800 bg-green-100">Completa</option>
+                            <option value="Incompleta" className="text-yellow-800 bg-yellow-100">Incompleta</option>
+                          </select>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {trip.manifestDate}
