@@ -272,17 +272,30 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
   
   // Método para criar viagem diretamente com dados personalizados
   const handleCreateTrip = (preBoxId: string, tripData?: any) => {
-    // Usar o ID fornecido pelo usuário ou gerar um novo
-    const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    
-    // Verificar se já existe uma viagem com esse ID para evitar duplicatas
-    if (trips.some(trip => trip.id === tripId)) {
-      setError(`Já existe uma viagem com o ID ${tripId}.`);
-      return;
-    }
+    try {
+      // Usar o ID fornecido pelo usuário ou gerar um novo
+      const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      
+      // Verificar se já existe uma viagem com esse ID para evitar duplicatas
+      if (trips.some(trip => trip.id === tripId)) {
+        setError(`Já existe uma viagem com o ID ${tripId}.`);
+        return;
+      }
+      
+      // Verificar se o PRE-BOX existe e está livre
+      const preBox = preBoxes.find(pb => pb.id === preBoxId);
+      if (!preBox) {
+        setError(`PRE-BOX ${preBoxId} não encontrado.`);
+        return;
+      }
+      
+      if (preBox.status !== "LIVRE") {
+        setError(`PRE-BOX ${preBoxId} não está livre.`);
+        return;
+      }
     
     // Create new trip with custom data or defaults
     const newTrip: Trip = {
@@ -398,7 +411,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         content = {
           title: 'Excluir PRE-BOX',
           message: `Tem certeza que deseja excluir o PRE-BOX ${action.id}?`,
-          confirmAction: () => handleDeletePreBox(action.id),
+          confirmAction: () => {
+            handleDeletePreBox(action.id);
+            setShowModal(false); // Explicitamente fechar o modal após a ação
+          },
           type: 'delete'
         };
         break;
@@ -406,7 +422,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         content = {
           title: 'Excluir Viagem',
           message: `Tem certeza que deseja excluir a viagem ${action.id}?`,
-          confirmAction: () => handleDeleteTrip(action.id),
+          confirmAction: () => {
+            handleDeleteTrip(action.id);
+            setShowModal(false); // Explicitamente fechar o modal após a ação
+          },
           type: 'delete'
         };
         break;
@@ -414,7 +433,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
         content = {
           title: 'Vincular Viagem',
           message: `Tem certeza que deseja criar uma nova viagem para o PRE-BOX ${action.id}?`,
-          confirmAction: () => handleLinkTrip(action.id),
+          confirmAction: () => {
+            handleLinkTrip(action.id);
+            setShowModal(false); // Explicitamente fechar o modal após a ação
+          },
           type: 'confirm'
         };
         break;

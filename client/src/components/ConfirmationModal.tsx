@@ -40,8 +40,9 @@ const ConfirmationModal: React.FC = () => {
               type="button" 
               className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 ${modalContent.type === 'delete' ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'} text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
               onClick={() => {
+                // Apenas execute a ação de confirmação
+                // O fechamento será tratado dentro da função confirmAction
                 modalContent.confirmAction();
-                closeModal(); // Forçar o fechamento do modal
               }}
             >
               Confirmar
