@@ -43,7 +43,7 @@ export interface User {
 }
 
 // Context interface
-interface TripContextType {
+export interface TripContextType {
   preBoxes: PreBox[];
   trips: Trip[];
   newPreBoxId: string;
@@ -73,18 +73,23 @@ interface TripContextType {
 const TripContext = createContext<TripContextType | undefined>(undefined);
 
 // Provider component
-export const TripProvider = ({ children }: { children: ReactNode }) => {
+export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+  // Estado do aplicativo
   const [preBoxes, setPreBoxes] = useState<PreBox[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [newPreBoxId, setNewPreBoxId] = useState("");
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState<ModalContent>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
     const storedPreBoxes = localStorage.getItem('preBoxes');
     const storedTrips = localStorage.getItem('trips');
+    const savedAuth = localStorage.getItem('isAuthenticated');
+    const savedUser = localStorage.getItem('currentUser');
 
     if (storedPreBoxes) {
       setPreBoxes(JSON.parse(storedPreBoxes));
@@ -106,148 +111,146 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       const defaultTrips: Trip[] = [
         {
           id: "V1234",
-          date: "2025-05-16",
-          time: "08:00",
-          oldTrip: "V1230",
+          date: "17/05/2025",
+          time: "10:30",
+          oldTrip: "V999",
           preBox: "51",
-          boxD: "1",
+          boxD: "",
           quantity: "100",
-          shift: "1",
+          shift: "2",
           region: "Sul",
           status: "Completa",
-          manifestDate: "2025-05-17"
+          manifestDate: "17/05/2025"
         }
       ];
       setTrips(defaultTrips);
       localStorage.setItem('trips', JSON.stringify(defaultTrips));
     }
+
+    // Verificar autenticação
+    if (savedAuth === 'true' && savedUser) {
+      setIsAuthenticated(true);
+      setCurrentUser(savedUser);
+    }
   }, []);
 
-  // Save data to localStorage when it changes
+  // Persistir alterações no localStorage
   useEffect(() => {
-    if (preBoxes.length > 0) {
-      localStorage.setItem('preBoxes', JSON.stringify(preBoxes));
-    }
+    localStorage.setItem('preBoxes', JSON.stringify(preBoxes));
   }, [preBoxes]);
 
   useEffect(() => {
-    if (trips.length > 0) {
-      localStorage.setItem('trips', JSON.stringify(trips));
-    }
+    localStorage.setItem('trips', JSON.stringify(trips));
   }, [trips]);
 
-  // Validate PRE-BOX ID
-  const validatePreBoxId = (id: string): boolean => {
-    const numId = parseInt(id);
-    return (
-      (numId >= 50 && numId <= 55) || 
-      (numId >= 300 && numId <= 356)
-    );
+  // Gerar um ID para PRE-BOX
+  const generatePreBoxId = (): string => {
+    let highest = 0;
+    preBoxes.forEach(pb => {
+      const id = parseInt(pb.id);
+      if (!isNaN(id) && id > highest) {
+        highest = id;
+      }
+    });
+    return String(highest + 1);
   };
 
-  // Check if PRE-BOX ID already exists
-  const preBoxIdExists = (id: string): boolean => {
-    return preBoxes.some(preBox => preBox.id === id);
+  // Gerar ID para viagem
+  const generateTripId = (): string => {
+    let highestNum = 0;
+    trips.forEach(trip => {
+      const match = trip.id.match(/V(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > highestNum) {
+          highestNum = num;
+        }
+      }
+    });
+    return `V${highestNum + 1}`;
   };
 
-  // Add new PRE-BOX
+  // Funções de formatação
+  const formatDate = (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatTime = (date: Date): string => {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
+  // Add PRE-BOX
   const handleAddPreBox = () => {
+    // Validar o ID
     if (!newPreBoxId) {
-      setError("Por favor, insira um ID para o PRE-BOX.");
+      setError("Por favor, informe um ID para o PRE-BOX.");
       return;
     }
 
-    if (!validatePreBoxId(newPreBoxId)) {
-      setError("ID do PRE-BOX deve estar entre 50-55 ou 300-356.");
+    // Verificar se o ID já existe
+    if (preBoxes.some(box => box.id === newPreBoxId)) {
+      setError(`O PRE-BOX com ID ${newPreBoxId} já existe.`);
       return;
     }
 
-    if (preBoxIdExists(newPreBoxId)) {
-      setError("Este ID de PRE-BOX já existe.");
+    // Validar o formato do ID (entre 50-55 ou 300-356)
+    const preBoxNum = parseInt(newPreBoxId);
+    if (isNaN(preBoxNum) || 
+        !((preBoxNum >= 50 && preBoxNum <= 55) || 
+          (preBoxNum >= 300 && preBoxNum <= 356))) {
+      setError("O ID do PRE-BOX deve estar entre 50-55 ou 300-356.");
       return;
     }
 
+    // Add new PRE-BOX
     const newPreBox: PreBox = {
       id: newPreBoxId,
       status: "LIVRE"
     };
 
     setPreBoxes([...preBoxes, newPreBox]);
-    setNewPreBoxId("");
-    setError("");
+    setNewPreBoxId(""); // Clear the input
+    setError(""); // Clear any error
   };
 
-  // Delete PRE-BOX
-  const handleDeletePreBox = (id: string) => {
-    const preBox = preBoxes.find(pb => pb.id === id);
-    
-    if (preBox && preBox.status === "VIAGEM") {
-      setError("Não é possível excluir um PRE-BOX com viagem vinculada.");
-      return;
-    }
-
-    setPreBoxes(preBoxes.filter(preBox => preBox.id !== id));
-    setError("");
-  };
-
-  // Toggle PRE-BOX status between LIVRE and BLOQUEADO
+  // Toggle PRE-BOX status
   const handleToggleStatus = (id: string) => {
     setPreBoxes(preBoxes.map(preBox => {
       if (preBox.id === id) {
-        if (preBox.status === "VIAGEM") {
-          return preBox; // Don't change status if it has a trip
+        if (preBox.status === "LIVRE") {
+          return { ...preBox, status: "BLOQUEADO" };
+        } else if (preBox.status === "BLOQUEADO") {
+          return { ...preBox, status: "LIVRE" };
         }
-        return {
-          ...preBox,
-          status: preBox.status === "LIVRE" ? "BLOQUEADO" : "LIVRE"
-        };
       }
       return preBox;
     }));
   };
 
-  // Generate a unique trip ID
-  const generateTripId = (): string => {
-    const existingIds = trips.map(trip => trip.id);
-    let newId;
-    let counter = 1;
-    
-    do {
-      newId = `V${1000 + counter}`;
-      counter++;
-    } while (existingIds.includes(newId));
-    
-    return newId;
+  // Delete PRE-BOX
+  const handleDeletePreBox = (id: string) => {
+    setPreBoxes(preBoxes.filter(preBox => preBox.id !== id));
+    setShowModal(false); // Fechar o modal após a exclusão
   };
 
-  // Funções auxiliares para formatação de data e hora
-  const formatDate = (date: Date): string => {
-    // Formatação DD/MM/YYYY
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-  
-  const formatTime = (date: Date): string => {
-    return date.toTimeString().split(' ')[0].substring(0, 5);
-  };
-
-  // Link a trip to PRE-BOX (método original com confirmação)
+  // Link trip to PRE-BOX
   const handleLinkTrip = (preBoxId: string) => {
     const tripId = generateTripId();
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     
-    // Create new trip
+    // Create new trip with random data
     const newTrip: Trip = {
       id: tripId,
       date: formatDate(today),
       time: formatTime(today),
       oldTrip: "",
       preBox: preBoxId,
-      boxD: String(Math.floor(Math.random() * 10) + 1),
+      boxD: "",
       quantity: String(Math.floor(Math.random() * 100) + 50),
       shift: String(Math.floor(Math.random() * 3) + 1),
       region: ["Norte", "Sul", "Leste", "Oeste"][Math.floor(Math.random() * 4)],
@@ -268,99 +271,111 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       }
       return preBox;
     }));
+    
+    // Close modal
+    setShowModal(false);
   };
-  
-  // Método para criar viagem diretamente com dados personalizados
+
+  // Create trip with custom data
   const handleCreateTrip = (preBoxId: string, tripData?: any) => {
     try {
-      // Usar o ID fornecido pelo usuário ou gerar um novo
+      // Use the user-provided ID or generate a new one
       const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
       
-      // Verificar se já existe uma viagem com esse ID para evitar duplicatas
+      // Check if trip ID already exists
       if (trips.some(trip => trip.id === tripId)) {
         setError(`Já existe uma viagem com o ID ${tripId}.`);
-        return;
+        return false;
       }
       
-      // Verificar se o PRE-BOX existe e está livre
+      // Check if PRE-BOX exists and is available
       const preBox = preBoxes.find(pb => pb.id === preBoxId);
       if (!preBox) {
         setError(`PRE-BOX ${preBoxId} não encontrado.`);
-        return;
+        return false;
       }
       
       if (preBox.status !== "LIVRE") {
         setError(`PRE-BOX ${preBoxId} não está livre.`);
-        return;
+        return false;
       }
-    
-    // Create new trip with custom data or defaults
-    const newTrip: Trip = {
-      id: tripId,
-      date: formatDate(today),
-      time: formatTime(today),
-      oldTrip: tripData?.oldTrip || "",
-      preBox: preBoxId,
-      boxD: tripData?.boxD || "",
-      quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
-      shift: tripData?.shift || "1",
-      region: tripData?.region || "Sul",
-      status: tripData?.status || "Completa",
-      manifestDate: formatDate(tomorrow)
-    };
-    
-    setTrips([...trips, newTrip]);
-    
-    // Update PRE-BOX status
-    // Se o BOX-D já estiver preenchido, o PRE-BOX deve ficar LIVRE novamente
-    const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
-    
-    setPreBoxes(preBoxes.map(preBox => {
-      if (preBox.id === preBoxId) {
-        if (newStatus === "LIVRE") {
-          // Se BOX-D está preenchido, remove a referência da viagem mas mantém o histórico
-          return {
-            ...preBox,
-            status: newStatus,
-            tripId: undefined
-          };
-        } else {
-          // Caso contrário, vincula a viagem ao PRE-BOX
-          return {
-            ...preBox,
-            status: newStatus,
-            tripId: tripId
-          };
+      
+      // Create new trip with custom data
+      const newTrip: Trip = {
+        id: tripId,
+        date: formatDate(today),
+        time: formatTime(today),
+        oldTrip: tripData?.oldTrip || "",
+        preBox: preBoxId,
+        boxD: tripData?.boxD || "",
+        quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
+        shift: tripData?.shift || "1",
+        region: tripData?.region || "Sul",
+        status: tripData?.status || "Completa",
+        manifestDate: formatDate(tomorrow)
+      };
+      
+      // Update trips
+      setTrips(prev => [...prev, newTrip]);
+      
+      // Update PRE-BOX status
+      const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
+      
+      setPreBoxes(prev => prev.map(preBox => {
+        if (preBox.id === preBoxId) {
+          if (newStatus === "LIVRE") {
+            // If BOX-D is filled, remove the trip reference but keep the history
+            return {
+              ...preBox,
+              status: newStatus,
+              tripId: undefined
+            };
+          } else {
+            // Otherwise, link the trip to the PRE-BOX
+            return {
+              ...preBox,
+              status: newStatus,
+              tripId: tripId
+            };
+          }
         }
-      }
-      return preBox;
-    }));
+        return preBox;
+      }));
+      
+      console.log("Viagem criada com sucesso:", newTrip);
+      setError(""); // Clear any previous error
+      return true;
+    } catch (err) {
+      console.error("Erro ao criar viagem:", err);
+      setError("Erro ao criar viagem. Tente novamente.");
+      return false;
+    }
   };
 
   // Update trip
   const handleUpdateTrip = (tripId: string, updatedFields: Partial<Trip>) => {
-    // Verificar se estamos atualizando o BOX-D e se ele está sendo preenchido
+    // Check if we're updating BOX-D and it's being filled
     const tripToUpdate = trips.find(trip => trip.id === tripId);
     const hasBoxDChanged = updatedFields.boxD !== undefined && 
-                          (!tripToUpdate?.boxD || tripToUpdate.boxD === "") && 
-                          updatedFields.boxD !== "";
+                           (!tripToUpdate?.boxD || tripToUpdate.boxD === "") && 
+                           updatedFields.boxD !== "";
     
-    // Atualizar a viagem
-    setTrips(trips.map(trip => {
+    // Update trip
+    setTrips(prev => prev.map(trip => {
       if (trip.id === tripId) {
         return { ...trip, ...updatedFields };
       }
       return trip;
     }));
     
-    // Se BOX-D foi alterado de vazio para preenchido, liberar o PRE-BOX
+    // If BOX-D is being changed from empty to filled, free up the PRE-BOX
     if (hasBoxDChanged && tripToUpdate) {
       const preBoxId = tripToUpdate.preBox;
       
-      setPreBoxes(preBoxes.map(preBox => {
+      setPreBoxes(prev => prev.map(preBox => {
         if (preBox.id === preBoxId && preBox.status === "VIAGEM") {
           return {
             ...preBox,
@@ -372,10 +387,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       }));
     }
   };
-  
+
   // Delete trip
   const handleDeleteTrip = (tripId: string) => {
-    // Encontrar a viagem para obter a referência PRE-BOX
+    // Find the trip to get the PRE-BOX reference
     const tripToDelete = trips.find(trip => trip.id === tripId);
     
     if (!tripToDelete) return;
@@ -383,10 +398,10 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     // Remove the trip
     setTrips(prev => prev.filter(trip => trip.id !== tripId));
     
-    // Atualizar os PRE-BOXes que estão usando essa viagem
+    // Update PRE-BOXes that are using this trip
     setPreBoxes(prev => prev.map(preBox => {
       if (preBox.id === tripToDelete.preBox && preBox.status === "VIAGEM") {
-        // Liberar o PRE-BOX (mudar para status LIVRE)
+        // Free up the PRE-BOX
         return { 
           ...preBox,
           status: "LIVRE", 
@@ -396,7 +411,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       return preBox;
     }));
     
-    // Fechar o modal após a exclusão
+    // Close the modal after deletion
     setShowModal(false);
   };
 
@@ -413,7 +428,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
           message: `Tem certeza que deseja excluir o PRE-BOX ${action.id}?`,
           confirmAction: () => {
             handleDeletePreBox(action.id);
-            setShowModal(false); // Explicitamente fechar o modal após a ação
+            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'delete'
         };
@@ -424,7 +439,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
           message: `Tem certeza que deseja excluir a viagem ${action.id}?`,
           confirmAction: () => {
             handleDeleteTrip(action.id);
-            setShowModal(false); // Explicitamente fechar o modal após a ação
+            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'delete'
         };
@@ -435,7 +450,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
           message: `Tem certeza que deseja criar uma nova viagem para o PRE-BOX ${action.id}?`,
           confirmAction: () => {
             handleLinkTrip(action.id);
-            setShowModal(false); // Explicitamente fechar o modal após a ação
+            setShowModal(false); // Fechar o modal após confirmar
           },
           type: 'confirm'
         };
@@ -453,7 +468,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     setShowModal(false);
   };
 
-  // Get status class for PRE-BOX
+  // Get status class for styling
   const getStatusClass = (status: PreBoxStatus): string => {
     switch(status) {
       case "LIVRE":
@@ -467,30 +482,13 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Helper functions for dashboard
+  // Dashboard helper functions
   const getPreBoxesCount = (): number => preBoxes.length;
+  const getFreePreBoxesCount = (): number => preBoxes.filter(pb => pb.status === "LIVRE").length;
   
-  const getFreePreBoxesCount = (): number => 
-    preBoxes.filter(pb => pb.status === "LIVRE").length;
-
-  // Funções de autenticação
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-  
-  // Verificar autenticação no carregamento
-  useEffect(() => {
-    const savedAuth = localStorage.getItem('isAuthenticated');
-    const savedUser = localStorage.getItem('currentUser');
-    
-    if (savedAuth === 'true' && savedUser) {
-      setIsAuthenticated(true);
-      setCurrentUser(savedUser);
-    }
-  }, []);
-  
-  // Função de login
+  // Authentication functions
   const login = (username: string, password: string): boolean => {
-    // Usuários mockados para demonstração
+    // Mock users for demonstration
     const validUsers = [
       { username: "admin", password: "admin123" },
       { username: "operador", password: "operador123" }
@@ -511,7 +509,6 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     return false;
   };
   
-  // Função de logout
   const logout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
@@ -519,7 +516,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('currentUser');
   };
 
-  // Create the context value
+  // Context value
   const value: TripContextType = {
     preBoxes,
     trips,
@@ -553,7 +550,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
 export const useTrip = (): TripContextType => {
   const context = useContext(TripContext);
   if (context === undefined) {
-    throw new Error("useTrip must be used within a TripProvider");
+    throw new Error('useTrip must be used within a TripProvider');
   }
   return context;
 };
