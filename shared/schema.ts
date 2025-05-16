@@ -30,25 +30,9 @@ export const trips = pgTable("trips", {
 });
 
 // Schemas for validation
-export const insertPreBoxSchema = createInsertSchema(preBoxes).pick({
-  boxId: true,
-  status: true,
-  tripId: true,
-});
+export const insertPreBoxSchema = createInsertSchema(preBoxes);
 
-export const insertTripSchema = createInsertSchema(trips).pick({
-  tripId: true,
-  date: true,
-  time: true,
-  oldTrip: true,
-  preBox: true,
-  boxD: true,
-  quantity: true,
-  shift: true,
-  region: true,
-  status: true,
-  manifestDate: true,
-});
+export const insertTripSchema = createInsertSchema(trips);
 
 // Types
 export type InsertPreBox = z.infer<typeof insertPreBoxSchema>;
