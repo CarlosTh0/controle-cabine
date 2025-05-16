@@ -279,6 +279,8 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   // Create trip with custom data
   const handleCreateTrip = (preBoxId: string, tripData?: any, directToBoxD: boolean = false) => {
     try {
+      console.log("Criando viagem:", { preBoxId, tripData, directToBoxD });
+      
       // Use the user-provided ID or generate a new one
       const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
       const today = new Date();
@@ -292,7 +294,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       }
       
       // Se não for criação direta para BOX-D, verificar o PRE-BOX
-      if (!directToBoxD) {
+      if (!directToBoxD && preBoxId !== "DIRECT_TO_BOXD") {
         // Check if PRE-BOX exists and is available
         const preBox = preBoxes.find(pb => pb.id === preBoxId);
         if (!preBox) {

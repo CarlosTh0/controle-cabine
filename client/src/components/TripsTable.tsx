@@ -42,8 +42,11 @@ const TripsTable: React.FC = () => {
   const handleSubmitTrip = (e?: React.FormEvent) => {
     if (e) e.preventDefault(); // Impedir recarregar a página
     
+    console.log("Tentando criar viagem", { selectedPreBox, tripData });
+    
     // Se tem PRE-BOX selecionado, criar viagem normal
     if (selectedPreBox) {
+      console.log("Criando viagem com PRE-BOX:", selectedPreBox);
       // Criar nova viagem vinculada a um PRE-BOX
       const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
       if (preBox && preBox.status === "LIVRE") {
@@ -52,9 +55,10 @@ const TripsTable: React.FC = () => {
     } 
     // Se não tem PRE-BOX selecionado, criar direto para BOX-D
     else {
+      console.log("Criando viagem direto para BOX-D");
       // ID temporário para PRE-BOX apenas para satisfazer a API
       const tempPreBoxId = "DIRECT_TO_BOXD";
-      // Garantir que BOX-D esteja preenchido, mesmo que vazio (será preenchido depois)
+      // Criar viagem diretamente no BOX-D
       handleCreateTrip(tempPreBoxId, tripData, true);
     }
     
@@ -134,6 +138,12 @@ const TripsTable: React.FC = () => {
       e.preventDefault();
       handleSubmitTrip();
     }
+  };
+  
+  // Função simplificada para criar viagem (para uso direto no botão)
+  const handleButtonClick = () => {
+    console.log("Botão de criar viagem clicado");
+    handleSubmitTrip();
   };
 
   return (
@@ -340,9 +350,9 @@ const TripsTable: React.FC = () => {
                   
                   <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4">
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={handleButtonClick}
                       className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                      disabled={!createDirectToBoxD && !selectedPreBox}
                     >
                       Criar Viagem
                     </button>
