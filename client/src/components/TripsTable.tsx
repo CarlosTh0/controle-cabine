@@ -190,7 +190,7 @@ const TripsTable: React.FC = () => {
                   </button>
                 </div>
                 
-                <form onSubmit={handleSubmitTrip}>
+                <form onSubmit={handleSubmitTrip} onKeyDown={handleFormKeyDown}>
                   <div className="mt-4">
                     <div className="grid grid-cols-1 gap-y-4">
                       {/* Data e Hora atuais (já preenchidas) */}
