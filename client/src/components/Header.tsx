@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 interface HeaderProps {
-  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas";
-  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas") => void;
+  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo";
+  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo") => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
@@ -42,6 +42,12 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
               className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
             >
               Painel de Cargas
+            </button>
+            <button 
+              onClick={() => setActiveSection("resumo")}
+              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+            >
+              Resumo
             </button>
           </div>
         </nav>
@@ -93,9 +99,18 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
                 setActiveSection("painelCargas");
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
             >
               Painel de Cargas
+            </button>
+            <button 
+              onClick={() => {
+                setActiveSection("resumo");
+                setMobileMenuOpen(false);
+              }}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+            >
+              Resumo
             </button>
           </div>
         </div>

@@ -8,13 +8,14 @@ import Dashboard from "./components/Dashboard";
 import PreBoxManagement from "./components/PreBoxManagement";
 import TripsTable from "./components/TripsTable";
 import PainelCargas from "./components/PainelCargas";
+import Resumo from "./components/Resumo";
 import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
 import { TripProvider, useTrip } from "./contexts/TripContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
-  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo">("dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -43,6 +44,7 @@ function MainApp() {
               {activeSection === "preBoxes" && <PreBoxManagement />}
               {activeSection === "trips" && <TripsTable />}
               {activeSection === "painelCargas" && <PainelCargas />}
+              {activeSection === "resumo" && <Resumo />}
               <ConfirmationModal />
             </>
           ) : (

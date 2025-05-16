@@ -98,61 +98,53 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Trips */}
-      <div className="flex flex-col">
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <h3 className="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Viagens Recentes</h3>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Data/Hora
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      PRE-BOX
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      BOX-D
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Região
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {trips.slice(0, 5).map((trip) => (
-                    <tr key={trip.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {trip.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {trip.date} {trip.time}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge status="VIAGEM" value={trip.preBox} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {trip.boxD}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {trip.region}
-                      </td>
-                    </tr>
-                  ))}
-                  {trips.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                        Nenhuma viagem cadastrada
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+      {/* Status dos PRE-BOX */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Status dos PRE-BOX</h3>
+        </div>
+        <div className="bg-white px-4 py-5 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-green-50 p-4 rounded-md">
+              <div className="text-xl font-bold text-green-700 mb-1">
+                {preBoxes.filter(pb => pb.status === "LIVRE").length}
+              </div>
+              <div className="text-sm text-green-600">PRE-BOX Livres</div>
+            </div>
+            <div className="bg-yellow-50 p-4 rounded-md">
+              <div className="text-xl font-bold text-yellow-700 mb-1">
+                {preBoxes.filter(pb => pb.status === "VIAGEM").length}
+              </div>
+              <div className="text-sm text-yellow-600">PRE-BOX em Viagem</div>
+            </div>
+            <div className="bg-red-50 p-4 rounded-md">
+              <div className="text-xl font-bold text-red-700 mb-1">
+                {preBoxes.filter(pb => pb.status === "BLOQUEADO").length}
+              </div>
+              <div className="text-sm text-red-600">PRE-BOX Bloqueados</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Estatísticas de Viagens */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg font-medium leading-6 text-gray-900">Estatísticas de Viagens</h3>
+        </div>
+        <div className="bg-white px-4 py-5 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-4 rounded-md">
+              <div className="text-xl font-bold text-blue-700 mb-1">
+                {trips.filter(trip => trip.boxD && trip.boxD.trim() !== '').length}
+              </div>
+              <div className="text-sm text-blue-600">Viagens com BOX-D atribuído</div>
+            </div>
+            <div className="bg-indigo-50 p-4 rounded-md">
+              <div className="text-xl font-bold text-indigo-700 mb-1">
+                {trips.filter(trip => !trip.boxD || trip.boxD.trim() === '').length}
+              </div>
+              <div className="text-sm text-indigo-600">Viagens sem BOX-D atribuído</div>
             </div>
           </div>
         </div>

@@ -1,0 +1,71 @@
+try:
+    import streamlit as st
+    import pandas as pd
+
+    st.set_page_config(page_title="Programação Pensilina Igarapé", layout="centered")
+
+    st.title("PROGRAMAÇÃO PENSILINA IGARAPÉ")
+    st.subheader("📅 28/04/2025")
+
+    # Dados iniciais
+    cargas_data = {
+        "CARGAS": [
+            "CARGAS FORMADAS PELO 1º TURNO DIA SEGUINTE",
+            "CARGAS FORMADAS PELO 1º TURNO FECHAMENTO",
+            "CARGAS FORMADAS PELO 2º TURNO DIA SEGUINTE",
+            "CARGAS FORMADAS PELO 2º TURNO FECHAMENTO",
+            "CARGAS FORMADAS PELO 3º TURNO DIA SEGUINTE",
+            "CARGAS FORMADAS PELO 3º TURNO FECHAMENTO"
+        ],
+        "QTD. CARGAS": [0, 66, 36, 65, 13, 0],
+        "QTD. VEÍCULOS": [0, 707, 388, 713, 141, 0],
+        "TOTAL": [707, 707, 1101, 713, 141, 0]
+    }
+
+    df = pd.DataFrame(cargas_data)
+
+    # Edição dos dados
+    st.markdown("### Tabela de Cargas")
+    # edited_df = st.data_editor(
+    #     df,
+    #     num_rows="fixed",
+    #     use_container_width=True
+    # )
+    edited_df = df  # Não permite edição, apenas visualização
+
+    # Totais automáticos
+    total_cargas = edited_df["QTD. CARGAS"].sum()
+    total_veiculos = edited_df["QTD. VEÍCULOS"].sum()
+
+    try:
+        total_total = edited_df["TOTAL"].sum()
+    except:
+        total_total = 0
+
+    # Linha de totais
+    total_row = pd.DataFrame({
+        "CARGAS": ["TOTAL"],
+        "QTD. CARGAS": [total_cargas],
+        "QTD. VEÍCULOS": [total_veiculos],
+        "TOTAL": [total_total]
+    })
+
+    # Exibir tabela final com totais (apenas uma vez)
+    st.dataframe(pd.concat([edited_df, total_row], ignore_index=True), use_container_width=True)
+
+    # Legenda
+    st.markdown("---")
+    st.markdown("### LEGENDA P/ CARGAS")
+    st.table({
+        "TURNO": ["1º TURNO", "2º TURNO", "3º TURNO"],
+        "CÓDIGOS": ["1 e 2", "3 e 4", "5 e 6"]
+    })
+
+    # Cargas do dia
+    st.markdown("### Status do Dia")
+    col1, col2 = st.columns(2)
+    col1.metric("Cargas pra formar hoje", 201)
+    col2.metric("Cargas já formadas pra hoje", 178)
+
+except ModuleNotFoundError:
+    print("Erro: O módulo 'streamlit' não está instalado.\n\nPara rodar este aplicativo, instale o Streamlit com:\n  pip install streamlit\n\nE depois execute:\n  streamlit run app.py")
