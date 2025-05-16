@@ -4,7 +4,7 @@ import StatusBadge from "./StatusBadge";
 import { PlusIcon, X, Edit, Check } from "lucide-react";
 
 const TripsTable: React.FC = () => {
-  const { trips, preBoxes, handleCreateTrip, handleUpdateTrip, showConfirmModal } = useTrip();
+  const { trips, preBoxes, handleCreateTrip, handleUpdateTrip, handleDeleteTrip, showConfirmModal } = useTrip();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPreBox, setSelectedPreBox] = useState("");
   const [editingCell, setEditingCell] = useState<{tripId: string, field: string} | null>(null);
@@ -52,7 +52,7 @@ const TripsTable: React.FC = () => {
         // Garantir que o BOX-D esteja preenchido em criação direta
         boxD: tripData.boxD || `BOX-D_${Math.floor(Math.random() * 10) + 1}`
       };
-      handleCreateTrip(tempPreBoxId, tripWithBoxD, true); // Novo parâmetro "true" para indicar criação direta
+      handleCreateTrip(tempPreBoxId, tripWithBoxD, true); // Parâmetro "true" indica criação direta
     } else if (selectedPreBox) {
       // Criar nova viagem vinculada a um PRE-BOX
       const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
@@ -123,6 +123,23 @@ const TripsTable: React.FC = () => {
     setEditValue("");
   };
 
+  // Filtrar viagens com base no termo de pesquisa
+  const filteredTrips = trips.filter(trip => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      trip.id.toLowerCase().includes(searchLower) ||
+      trip.oldTrip.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Keydown handler para o formulário de criação
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitTrip();
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -173,193 +190,194 @@ const TripsTable: React.FC = () => {
                   </button>
                 </div>
                 
-                <form onSubmit={(e) => { e.preventDefault(); handleSubmitTrip(); }}>
+                <form onSubmit={handleSubmitTrip}>
                   <div className="mt-4">
-                  <div className="grid grid-cols-1 gap-y-4">
-                    {/* Data e Hora atuais (já preenchidas) */}
-                    <div className="flex flex-wrap gap-4">
-                      <div className="w-full sm:w-auto flex-1">
-                        <label className="block text-sm font-medium text-gray-700">Data</label>
-                        <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
-                          {getCurrentDate()}
+                    <div className="grid grid-cols-1 gap-y-4">
+                      {/* Data e Hora atuais (já preenchidas) */}
+                      <div className="flex flex-wrap gap-4">
+                        <div className="w-full sm:w-auto flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Data</label>
+                          <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
+                            {getCurrentDate()}
+                          </div>
+                        </div>
+                        <div className="w-full sm:w-auto flex-1">
+                          <label className="block text-sm font-medium text-gray-700">Hora</label>
+                          <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
+                            {getCurrentTime()}
+                          </div>
                         </div>
                       </div>
-                      <div className="w-full sm:w-auto flex-1">
-                        <label className="block text-sm font-medium text-gray-700">Hora</label>
-                        <div className="mt-1 text-sm text-gray-900 bg-gray-100 px-3 py-2 rounded-md">
-                          {getCurrentTime()}
+                      
+                      {/* Opção para criar no BOX-D diretamente */}
+                      <div className="mb-4">
+                        <div className="flex items-center">
+                          <input
+                            id="direct-boxd"
+                            name="direct-boxd"
+                            type="checkbox"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            checked={createDirectToBoxD}
+                            onChange={(e) => setCreateDirectToBoxD(e.target.checked)}
+                          />
+                          <label htmlFor="direct-boxd" className="ml-2 block text-sm font-medium text-gray-700">
+                            Criar diretamente para BOX-D (sem PRE-BOX)
+                          </label>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Opção para criar no BOX-D diretamente */}
-                    <div className="mb-4">
-                      <div className="flex items-center">
-                        <input
-                          id="direct-boxd"
-                          name="direct-boxd"
-                          type="checkbox"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          checked={createDirectToBoxD}
-                          onChange={(e) => setCreateDirectToBoxD(e.target.checked)}
-                        />
-                        <label htmlFor="direct-boxd" className="ml-2 block text-sm font-medium text-gray-700">
-                          Criar diretamente para BOX-D (sem PRE-BOX)
-                        </label>
+                      
+                      {/* Seleção de PRE-BOX se não for direto para BOX-D */}
+                      {!createDirectToBoxD && (
+                        <div>
+                          <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
+                            PRE-BOX Livre
+                          </label>
+                          <select
+                            id="pre-box"
+                            name="pre-box"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={selectedPreBox}
+                            onChange={(e) => setSelectedPreBox(e.target.value)}
+                          >
+                            <option value="">Selecione um PRE-BOX</option>
+                            {availablePreBoxes.map((preBox) => (
+                              <option key={preBox.id} value={preBox.id}>
+                                PRE-BOX {preBox.id}
+                              </option>
+                            ))}
+                          </select>
+                          {availablePreBoxes.length === 0 && (
+                            <p className="mt-2 text-sm text-red-600">
+                              Não há PRE-BOXes livres disponíveis.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Informações adicionais */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="trip-id" className="block text-sm font-medium text-gray-700">
+                            VIAGEM (opcional)
+                          </label>
+                          <input
+                            type="text"
+                            id="trip-id"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.id}
+                            onChange={(e) => setTripData({...tripData, id: e.target.value})}
+                            placeholder="Número da viagem opcional"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="old-trip" className="block text-sm font-medium text-gray-700">
+                            Viagem Antiga
+                          </label>
+                          <input
+                            type="text"
+                            id="old-trip"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.oldTrip}
+                            onChange={(e) => setTripData({...tripData, oldTrip: e.target.value})}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Seleção de PRE-BOX se não for direto para BOX-D */}
-                    {!createDirectToBoxD && (
-                      <div>
-                        <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
-                          PRE-BOX Livre
-                        </label>
-                        <select
-                          id="pre-box"
-                          name="pre-box"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={selectedPreBox}
-                          onChange={(e) => setSelectedPreBox(e.target.value)}
-                        >
-                          <option value="">Selecione um PRE-BOX</option>
-                          {availablePreBoxes.map((preBox) => (
-                            <option key={preBox.id} value={preBox.id}>
-                              PRE-BOX {preBox.id}
-                            </option>
-                          ))}
-                        </select>
-                        {availablePreBoxes.length === 0 && (
-                          <p className="mt-2 text-sm text-red-600">
-                            Não há PRE-BOXes livres disponíveis.
-                          </p>
-                        )}
+                      
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <label htmlFor="box-d" className="block text-sm font-medium text-gray-700">
+                            BOX-D {createDirectToBoxD && "(Obrigatório)"}
+                          </label>
+                          <input
+                            type="text"
+                            id="box-d"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.boxD}
+                            onChange={(e) => setTripData({...tripData, boxD: e.target.value})}
+                            required={createDirectToBoxD}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                            Quantidade
+                          </label>
+                          <input
+                            type="text"
+                            id="quantity"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.quantity}
+                            onChange={(e) => setTripData({...tripData, quantity: e.target.value})}
+                          />
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Informações adicionais */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="trip-id" className="block text-sm font-medium text-gray-700">
-                          VIAGEM (opcional)
-                        </label>
-                        <input
-                          type="text"
-                          id="trip-id"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.id}
-                          onChange={(e) => setTripData({...tripData, id: e.target.value})}
-                          placeholder="Número da viagem opcional"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="old-trip" className="block text-sm font-medium text-gray-700">
-                          Viagem Antiga
-                        </label>
-                        <input
-                          type="text"
-                          id="old-trip"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.oldTrip}
-                          onChange={(e) => setTripData({...tripData, oldTrip: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <div>
-                        <label htmlFor="box-d" className="block text-sm font-medium text-gray-700">
-                          BOX-D
-                        </label>
-                        <input
-                          type="text"
-                          id="box-d"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.boxD}
-                          onChange={(e) => setTripData({...tripData, boxD: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
-                          Quantidade
-                        </label>
-                        <input
-                          type="text"
-                          id="quantity"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.quantity}
-                          onChange={(e) => setTripData({...tripData, quantity: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 mt-4">
-                      <div>
-                        <label htmlFor="turno" className="block text-sm font-medium text-gray-700">
-                          Turno
-                        </label>
-                        <select
-                          id="turno"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.shift}
-                          onChange={(e) => setTripData({...tripData, shift: e.target.value})}
-                        >
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="region" className="block text-sm font-medium text-gray-700">
-                          Região
-                        </label>
-                        <select
-                          id="region"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.region}
-                          onChange={(e) => setTripData({...tripData, region: e.target.value})}
-                        >
-                          <option value="Norte">Norte</option>
-                          <option value="Sul">Sul</option>
-                          <option value="Leste">Leste</option>
-                          <option value="Oeste">Oeste</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                          Situação
-                        </label>
-                        <select
-                          id="status"
-                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          value={tripData.status}
-                          onChange={(e) => setTripData({...tripData, status: e.target.value})}
-                        >
-                          <option value="Completa">Completa</option>
-                          <option value="Incompleta">Incompleta</option>
-                        </select>
+                      
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <label htmlFor="turno" className="block text-sm font-medium text-gray-700">
+                            Turno
+                          </label>
+                          <select
+                            id="turno"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.shift}
+                            onChange={(e) => setTripData({...tripData, shift: e.target.value})}
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="region" className="block text-sm font-medium text-gray-700">
+                            Região
+                          </label>
+                          <select
+                            id="region"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.region}
+                            onChange={(e) => setTripData({...tripData, region: e.target.value})}
+                          >
+                            <option value="Norte">Norte</option>
+                            <option value="Sul">Sul</option>
+                            <option value="Leste">Leste</option>
+                            <option value="Oeste">Oeste</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                            Situação
+                          </label>
+                          <select
+                            id="status"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={tripData.status}
+                            onChange={(e) => setTripData({...tripData, status: e.target.value})}
+                          >
+                            <option value="Completa">Completa</option>
+                            <option value="Incompleta">Incompleta</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={handleSubmitTrip}
-                  disabled={!selectedPreBox}
-                >
-                  Criar Viagem
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => setShowCreateForm(false)}
-                >
-                  Cancelar
-                </button>
+                  
+                  <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-4">
+                    <button
+                      type="submit"
+                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                      disabled={!createDirectToBoxD && !selectedPreBox}
+                    >
+                      Criar Viagem
+                    </button>
+                    <button
+                      type="button"
+                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      onClick={() => setShowCreateForm(false)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -376,13 +394,10 @@ const TripsTable: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Data
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Viagem
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Hora
+                        Data / Hora
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Viagem Antiga
@@ -403,10 +418,7 @@ const TripsTable: React.FC = () => {
                         Região
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Situação
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Data Prev. Manifesto
+                        Status
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Ações
@@ -414,108 +426,153 @@ const TripsTable: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {/* Filtra as viagens com base no termo de pesquisa */}
-                    {trips.filter(trip => {
-                      if (searchTerm === "") return true;
-                      
-                      const searchLower = searchTerm.toLowerCase();
-                      return (
-                        trip.id.toLowerCase().includes(searchLower) || 
-                        (trip.oldTrip && trip.oldTrip.toLowerCase().includes(searchLower))
-                      );
-                    }).map((trip) => (
-                      <tr key={trip.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {trip.date}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {trip.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {trip.time}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          <input
-                            type="text"
-                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
-                            value={trip.oldTrip || ""}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'oldTrip')}
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <StatusBadge status="VIAGEM" value={trip.preBox} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          <input
-                            type="text"
-                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
-                            value={trip.boxD || ""}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'boxD')}
-                            placeholder="BOX-D"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          <input
-                            type="text"
-                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
-                            value={trip.quantity}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'quantity')}
-                            placeholder="Quantidade"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          <select
-                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
-                            value={trip.shift}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
-                          >
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group">
-                          <select
-                            className="w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded"
-                            value={trip.region}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
-                          >
-                            <option value="Norte">Norte</option>
-                            <option value="Sul">Sul</option>
-                            <option value="Leste">Leste</option>
-                            <option value="Oeste">Oeste</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap group">
-                          <select
-                            className={`w-full bg-transparent border-none hover:bg-gray-100 focus:bg-white focus:ring-1 focus:ring-blue-500 px-2 py-1 rounded ${trip.status === "Completa" ? "text-green-800" : "text-yellow-800"}`}
-                            value={trip.status}
-                            onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
-                          >
-                            <option value="Completa" className="text-green-800 bg-green-100">Completa</option>
-                            <option value="Incompleta" className="text-yellow-800 bg-yellow-100">Incompleta</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {trip.manifestDate}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                          <button
-                            type="button"
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md"
-                            onClick={() => {
-                              showConfirmModal({ type: 'deleteTrip', id: trip.id });
-                            }}
-                          >
-                            Excluir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {trips.length === 0 && (
+                    {filteredTrips.length > 0 ? (
+                      filteredTrips.map(trip => (
+                        <tr key={trip.id}>
+                          {/* Viagem */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {editingCell?.tripId === trip.id && editingCell?.field === 'id' ? (
+                              <div className="flex items-center">
+                                <input 
+                                  type="text"
+                                  className="block w-full py-1 px-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  value={editValue}
+                                  onChange={(e) => setEditValue(e.target.value)}
+                                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
+                                />
+                                <div className="ml-2 flex space-x-1">
+                                  <button onClick={saveEdit} className="text-green-600"><Check size={16} /></button>
+                                  <button onClick={cancelEdit} className="text-red-600"><X size={16} /></button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center">
+                                <input 
+                                  type="text"
+                                  className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                                  value={trip.id}
+                                  onChange={(e) => handleDirectEdit(e, trip.id, 'id')}
+                                />
+                              </div>
+                            )}
+                          </td>
+                          
+                          {/* Data/Hora */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <input 
+                                type="text"
+                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                                value={trip.date}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'date')}
+                              />
+                            </div>
+                            <div>
+                              <input 
+                                type="text"
+                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                                value={trip.time}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'time')}
+                              />
+                            </div>
+                          </td>
+                          
+                          {/* Viagem Antiga */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.oldTrip}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'oldTrip')}
+                            />
+                          </td>
+                          
+                          {/* PRE-BOX */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.preBox}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'preBox')}
+                              readOnly
+                            />
+                          </td>
+                          
+                          {/* BOX-D */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.boxD}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'boxD')}
+                              placeholder="BOX-D"
+                            />
+                          </td>
+                          
+                          {/* Quantidade */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.quantity}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'quantity')}
+                            />
+                          </td>
+                          
+                          {/* Turno */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <select 
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              value={trip.shift}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
+                            >
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                            </select>
+                          </td>
+                          
+                          {/* Região */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <select 
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              value={trip.region}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
+                            >
+                              <option value="Norte">Norte</option>
+                              <option value="Sul">Sul</option>
+                              <option value="Leste">Leste</option>
+                              <option value="Oeste">Oeste</option>
+                            </select>
+                          </td>
+                          
+                          {/* Status */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <select 
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              value={trip.status}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
+                            >
+                              <option value="Completa">Completa</option>
+                              <option value="Incompleta">Incompleta</option>
+                            </select>
+                          </td>
+                          
+                          {/* Ações */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button
+                              className="text-red-600 hover:text-red-900 mr-2"
+                              onClick={() => showConfirmModal({ type: 'deleteTrip', id: trip.id })}
+                            >
+                              Excluir
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
                       <tr>
-                        <td colSpan={12} className="px-6 py-4 text-center text-sm text-gray-500">
-                          Nenhuma viagem cadastrada
+                        <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
+                          Nenhuma viagem encontrada.
                         </td>
                       </tr>
                     )}
