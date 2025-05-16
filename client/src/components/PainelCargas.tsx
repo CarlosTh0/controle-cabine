@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 
-const regioesIniciais = [
+interface Regiao {
+  nome: string;
+  sigla: string;
+  chamada: number;
+  fechamento: number;
+  antes: number;
+  turno1: number;
+  turno2: number;
+  turno3: number;
+  [key: string]: string | number; // Permite acesso por string
+}
+
+const regioesIniciais: Regiao[] = [
   { nome: "Pranchinha", sigla: "P", chamada: 9, fechamento: 0, antes: 14, turno1: 0, turno2: 13, turno3: 0 },
   { nome: "Tegma", sigla: "T", chamada: 12, fechamento: 0, antes: 11, turno1: 0, turno2: 15, turno3: 0 },
   { nome: "Localiza", sigla: "L", chamada: 27, fechamento: 9, antes: 0, turno1: 5, turno2: 4, turno3: 0 },
@@ -25,8 +37,12 @@ export default function PainelCargas() {
   const handleChange = (index: number, campo: string, valor: string) => {
     if (!/^\d*$/.test(valor)) return; // Valida somente números
     const novasRegioes = [...regioes];
-    novasRegioes[index][campo] = parseInt(valor) || 0;
-    setRegioes(novasRegioes);
+    // Assegurando que campo é uma chave válida da interface Regiao
+    if (campo === 'chamada' || campo === 'fechamento' || campo === 'antes' || 
+        campo === 'turno1' || campo === 'turno2' || campo === 'turno3') {
+      novasRegioes[index][campo] = parseInt(valor) || 0;
+      setRegioes(novasRegioes);
+    }
   };
 
   const totalizar = (campo: string) => regioes.reduce((total, r) => total + (r[campo] as number), 0);
