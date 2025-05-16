@@ -352,25 +352,29 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
   
   // Delete trip
   const handleDeleteTrip = (tripId: string) => {
-    // Find the PRE-BOX linked to this trip
-    const linkedPreBox = preBoxes.find(pb => pb.tripId === tripId);
+    // Encontrar a viagem para obter a referência PRE-BOX
+    const tripToDelete = trips.find(trip => trip.id === tripId);
+    
+    if (!tripToDelete) return;
     
     // Remove the trip
     setTrips(trips.filter(trip => trip.id !== tripId));
     
-    // Update the PRE-BOX status
-    if (linkedPreBox) {
-      setPreBoxes(preBoxes.map(preBox => {
-        if (preBox.id === linkedPreBox.id) {
-          const { tripId: _, ...rest } = preBox;
-          return {
-            ...rest,
-            status: "LIVRE"
-          };
-        }
-        return preBox;
-      }));
-    }
+    // Atualizar os PRE-BOXes que estão usando essa viagem
+    setPreBoxes(preBoxes.map(preBox => {
+      if (preBox.id === tripToDelete.preBox && preBox.status === "VIAGEM") {
+        // Liberar o PRE-BOX (mudar para status LIVRE)
+        return { 
+          ...preBox,
+          status: "LIVRE", 
+          tripId: undefined 
+        };
+      }
+      return preBox;
+    }));
+    
+    // Fechar o modal após a exclusão
+    setShowModal(false);
   };
 
   // Show confirmation modal
