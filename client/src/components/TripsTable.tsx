@@ -1,21 +1,60 @@
 import { useState } from "react";
 import { useTrip } from "../contexts/TripContext";
 import StatusBadge from "./StatusBadge";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, X } from "lucide-react";
 
 const TripsTable: React.FC = () => {
-  const { trips, preBoxes, showConfirmModal } = useTrip();
+  const { trips, preBoxes, handleCreateTrip, showConfirmModal } = useTrip();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPreBox, setSelectedPreBox] = useState("");
+  const [tripData, setTripData] = useState({
+    oldTrip: "",
+    boxD: "",
+    quantity: "",
+    shift: "1",
+    region: "Sul",
+    status: "Completa"
+  });
   
   // Filtrar apenas PRE-BOXes com status LIVRE
   const availablePreBoxes = preBoxes.filter(pb => pb.status === "LIVRE");
 
-  const handleCreateTrip = () => {
+  // Obter data e hora atuais formatadas
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+  };
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  };
+
+  // Função para criar viagem com os dados do form
+  const handleSubmitTrip = () => {
     if (selectedPreBox) {
-      showConfirmModal({ type: 'linkTrip', id: selectedPreBox });
+      // Criar nova viagem com os dados do formulário
+      handleQuickCreateTrip();
       setShowCreateForm(false);
       setSelectedPreBox("");
+      setTripData({
+        oldTrip: "",
+        boxD: "",
+        quantity: "",
+        shift: "1",
+        region: "Sul",
+        status: "Completa"
+      });
+    }
+  };
+
+  // Função para criar viagem rapidamente
+  const handleQuickCreateTrip = () => {
+    // Criar viagem diretamente sem confirmação
+    const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
+    if (preBox && preBox.status === "LIVRE") {
+      // Usar o método do contexto para criar a viagem
+      handleCreateTrip(selectedPreBox, tripData);
     }
   };
 

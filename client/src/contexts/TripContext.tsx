@@ -49,6 +49,7 @@ interface TripContextType {
   handleToggleStatus: (id: string) => void;
   handleDeletePreBox: (id: string) => void;
   handleLinkTrip: (preBoxId: string) => void;
+  handleCreateTrip: (preBoxId: string, tripData?: any) => void;
   handleDeleteTrip: (tripId: string) => void;
   showConfirmModal: (action: ModalAction) => void;
   closeModal: () => void;
@@ -208,20 +209,21 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     return newId;
   };
 
-  // Link a trip to PRE-BOX
+  // Funções auxiliares para formatação de data e hora
+  const formatDate = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+  
+  const formatTime = (date: Date): string => {
+    return date.toTimeString().split(' ')[0].substring(0, 5);
+  };
+
+  // Link a trip to PRE-BOX (método original com confirmação)
   const handleLinkTrip = (preBoxId: string) => {
     const tripId = generateTripId();
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    
-    const formatDate = (date: Date): string => {
-      return date.toISOString().split('T')[0];
-    };
-    
-    const formatTime = (date: Date): string => {
-      return date.toTimeString().split(' ')[0].substring(0, 5);
-    };
     
     // Create new trip
     const newTrip: Trip = {
@@ -235,6 +237,43 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
       shift: String(Math.floor(Math.random() * 3) + 1),
       region: ["Norte", "Sul", "Leste", "Oeste"][Math.floor(Math.random() * 4)],
       status: Math.random() > 0.5 ? "Completa" : "Incompleta",
+      manifestDate: formatDate(tomorrow)
+    };
+    
+    setTrips([...trips, newTrip]);
+    
+    // Update PRE-BOX status
+    setPreBoxes(preBoxes.map(preBox => {
+      if (preBox.id === preBoxId) {
+        return {
+          ...preBox,
+          status: "VIAGEM",
+          tripId: tripId
+        };
+      }
+      return preBox;
+    }));
+  };
+  
+  // Método para criar viagem diretamente com dados personalizados
+  const handleCreateTrip = (preBoxId: string, tripData?: any) => {
+    const tripId = generateTripId();
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    // Create new trip with custom data or defaults
+    const newTrip: Trip = {
+      id: tripId,
+      date: formatDate(today),
+      time: formatTime(today),
+      oldTrip: tripData?.oldTrip || "",
+      preBox: preBoxId,
+      boxD: tripData?.boxD || String(Math.floor(Math.random() * 10) + 1),
+      quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
+      shift: tripData?.shift || "1",
+      region: tripData?.region || "Sul",
+      status: tripData?.status || "Completa",
       manifestDate: formatDate(tomorrow)
     };
     
@@ -353,6 +392,7 @@ export const TripProvider = ({ children }: { children: ReactNode }) => {
     handleToggleStatus,
     handleDeletePreBox,
     handleLinkTrip,
+    handleCreateTrip,
     handleDeleteTrip,
     showConfirmModal,
     closeModal,
