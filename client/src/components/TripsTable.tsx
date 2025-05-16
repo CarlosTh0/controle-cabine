@@ -18,8 +18,7 @@ const TripsTable: React.FC = () => {
     quantity: "",
     shift: "1",
     region: "Sul",
-    status: "Completa",
-    viagem: "" // Campo para VIAGEM
+    status: "Completa"
   });
   
   // Filtrar apenas PRE-BOXes com status LIVRE
@@ -43,22 +42,20 @@ const TripsTable: React.FC = () => {
   const handleSubmitTrip = (e?: React.FormEvent) => {
     if (e) e.preventDefault(); // Impedir recarregar a página
     
-    if (createDirectToBoxD) {
-      // Criar viagem diretamente para BOX-D sem PRE-BOX
-      // Geramos um ID temporário para PRE-BOX apenas para satisfazer a API
-      const tempPreBoxId = "DIRECT_TO_BOXD";
-      const tripWithBoxD = {
-        ...tripData,
-        // Garantir que o BOX-D esteja preenchido em criação direta
-        boxD: tripData.boxD || `BOX-D_${Math.floor(Math.random() * 10) + 1}`
-      };
-      handleCreateTrip(tempPreBoxId, tripWithBoxD, true); // Parâmetro "true" indica criação direta
-    } else if (selectedPreBox) {
+    // Se tem PRE-BOX selecionado, criar viagem normal
+    if (selectedPreBox) {
       // Criar nova viagem vinculada a um PRE-BOX
       const preBox = preBoxes.find(pb => pb.id === selectedPreBox);
       if (preBox && preBox.status === "LIVRE") {
         handleCreateTrip(selectedPreBox, tripData);
       }
+    } 
+    // Se não tem PRE-BOX selecionado, criar direto para BOX-D
+    else {
+      // ID temporário para PRE-BOX apenas para satisfazer a API
+      const tempPreBoxId = "DIRECT_TO_BOXD";
+      // Garantir que BOX-D esteja preenchido, mesmo que vazio (será preenchido depois)
+      handleCreateTrip(tempPreBoxId, tripData, true);
     }
     
     // Limpar form e fechar
@@ -71,8 +68,7 @@ const TripsTable: React.FC = () => {
       quantity: "",
       shift: "1",
       region: "Sul",
-      status: "Completa",
-      viagem: ""
+      status: "Completa"
     });
     setCreateDirectToBoxD(false);
   };
@@ -209,50 +205,31 @@ const TripsTable: React.FC = () => {
                         </div>
                       </div>
                       
-                      {/* Opção para criar no BOX-D diretamente */}
-                      <div className="mb-4">
-                        <div className="flex items-center">
-                          <input
-                            id="direct-boxd"
-                            name="direct-boxd"
-                            type="checkbox"
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            checked={createDirectToBoxD}
-                            onChange={(e) => setCreateDirectToBoxD(e.target.checked)}
-                          />
-                          <label htmlFor="direct-boxd" className="ml-2 block text-sm font-medium text-gray-700">
-                            Criar diretamente para BOX-D (sem PRE-BOX)
-                          </label>
-                        </div>
+                      {/* Seleção de PRE-BOX (opcional) */}
+                      <div>
+                        <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
+                          PRE-BOX (opcional)
+                        </label>
+                        <select
+                          id="pre-box"
+                          name="pre-box"
+                          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          value={selectedPreBox}
+                          onChange={(e) => setSelectedPreBox(e.target.value)}
+                        >
+                          <option value="">Selecione um PRE-BOX ou deixe vazio para ir direto ao BOX-D</option>
+                          {availablePreBoxes.map((preBox) => (
+                            <option key={preBox.id} value={preBox.id}>
+                              PRE-BOX {preBox.id}
+                            </option>
+                          ))}
+                        </select>
+                        {availablePreBoxes.length === 0 && (
+                          <p className="mt-2 text-sm text-text-amber-600">
+                            Não há PRE-BOXes livres disponíveis, mas você pode criar direto no BOX-D.
+                          </p>
+                        )}
                       </div>
-                      
-                      {/* Seleção de PRE-BOX se não for direto para BOX-D */}
-                      {!createDirectToBoxD && (
-                        <div>
-                          <label htmlFor="pre-box" className="block text-sm font-medium text-gray-700">
-                            PRE-BOX Livre
-                          </label>
-                          <select
-                            id="pre-box"
-                            name="pre-box"
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            value={selectedPreBox}
-                            onChange={(e) => setSelectedPreBox(e.target.value)}
-                          >
-                            <option value="">Selecione um PRE-BOX</option>
-                            {availablePreBoxes.map((preBox) => (
-                              <option key={preBox.id} value={preBox.id}>
-                                PRE-BOX {preBox.id}
-                              </option>
-                            ))}
-                          </select>
-                          {availablePreBoxes.length === 0 && (
-                            <p className="mt-2 text-sm text-red-600">
-                              Não há PRE-BOXes livres disponíveis.
-                            </p>
-                          )}
-                        </div>
-                      )}
                       
                       {/* Informações adicionais */}
                       <div className="grid grid-cols-2 gap-4">
@@ -394,10 +371,10 @@ const TripsTable: React.FC = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Viagem
+                        Data / Hora
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Data / Hora
+                        Viagem
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Viagem Antiga
@@ -429,6 +406,26 @@ const TripsTable: React.FC = () => {
                     {filteredTrips.length > 0 ? (
                       filteredTrips.map(trip => (
                         <tr key={trip.id}>
+                          {/* Data/Hora */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <input 
+                                type="text"
+                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                                value={trip.date}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'date')}
+                              />
+                            </div>
+                            <div>
+                              <input 
+                                type="text"
+                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                                value={trip.time}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'time')}
+                              />
+                            </div>
+                          </td>
+                          
                           {/* Viagem */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             {editingCell?.tripId === trip.id && editingCell?.field === 'id' ? (
@@ -455,26 +452,6 @@ const TripsTable: React.FC = () => {
                                 />
                               </div>
                             )}
-                          </td>
-                          
-                          {/* Data/Hora */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <input 
-                                type="text"
-                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
-                                value={trip.date}
-                                onChange={(e) => handleDirectEdit(e, trip.id, 'date')}
-                              />
-                            </div>
-                            <div>
-                              <input 
-                                type="text"
-                                className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
-                                value={trip.time}
-                                onChange={(e) => handleDirectEdit(e, trip.id, 'time')}
-                              />
-                            </div>
                           </td>
                           
                           {/* Viagem Antiga */}
