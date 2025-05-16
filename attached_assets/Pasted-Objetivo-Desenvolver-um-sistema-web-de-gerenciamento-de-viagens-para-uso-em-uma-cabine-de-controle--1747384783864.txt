@@ -1,0 +1,102 @@
+Objetivo: Desenvolver um sistema web de gerenciamento de viagens para uso em uma cabine de controle, permitindo a organização, vinculação e monitoramento de viagens em locais chamados PRE-BOX e BOX-D. O sistema deve ser moderno, intuitivo, e funcional, com uma interface em formato de tabela interativa e gerenciamento dinâmico de PRE-BOX.
+
+1. Contexto e Funcionamento
+Descrição do Negócio:
+O sistema gerencia "viagens" (cargas ou veículos) que são vinculadas a locais de armazenamento chamados PRE-BOX, numerados de 50 a 55 e 300 a 356.
+As viagens são posteriormente transferidas para locais de carregamento chamados BOX-D, também numerados.
+Cada PRE-BOX pode estar em um dos seguintes estados:
+LIVRE (verde): Sem viagem vinculada, disponível para uso.
+VIAGEM (amarelo): Vinculado a uma viagem específica (mostra o ID da viagem).
+BLOQUEADO (vermelho): Indisponível para uso, sem viagem vinculada.
+O sistema deve permitir adicionar e excluir PRE-BOX dinamicamente, respeitando os intervalos de numeração fornecidos.
+A interface será usada em uma cabine de controle, exigindo clareza, legibilidade, e um design moderno.
+Funcionalidades Principais:
+Exibir uma tabela com informações das viagens, incluindo:
+DATA: Data da viagem (ex.: 2025-05-16).
+VIAGEM: Identificador único da viagem (ex.: V1234).
+HORA: Horário da viagem (ex.: 08:00).
+VIAGEM ANTIGA: Identificador de uma viagem anterior, se aplicável.
+PRE-BOX: Número do PRE-BOX vinculado (com cor indicando o status).
+BOX-D: Número do BOX-D para carregamento.
+QUANTIDADE: Quantidade de carga (ex.: 100 unidades).
+TURNO: Número do turno (ex.: 1, 2, 3; placeholders até detalhes adicionais).
+REGIÃO: Região da viagem (ex.: Sul, Norte).
+SITUAÇÃO: Status da viagem (ex.: Completa, Incompleta; placeholders até detalhes).
+DATA PREV. DO MANIFESTO: Data prevista para o manifesto (ex.: 2025-05-17).
+AÇÕES: Botões para excluir a viagem.
+Gerenciar PRE-BOX:
+Adicionar novos PRE-BOX nos intervalos 50-55 ou 300-356.
+Excluir PRE-BOX, desde que não estejam vinculados a uma viagem.
+Alterar o status de PRE-BOX (LIVRE, BLOQUEADO) ou vincular uma viagem (VIAGEM).
+Exibir uma seção visual com todos os PRE-BOX disponíveis, mostrando seus números, status, e ações possíveis (vincular viagem, bloquear/liberar, excluir).
+Requisitos Visuais:
+Cores para Status:
+LIVRE: Fundo verde claro (bg-green-100, texto text-green-800).
+VIAGEM: Fundo amarelo claro (bg-yellow-100, texto text-yellow-800, com ID da viagem).
+BLOQUEADO: Fundo vermelho claro (bg-red-100, texto text-red-800).
+Design Moderno:
+Interface limpa, com sombras suaves, bordas arredondadas, e fontes legíveis (ex.: font-sans).
+Tabela responsiva, com rolagem horizontal em telas menores.
+Botões com efeitos de hover (ex.: hover:bg-blue-600 para botões azuis).
+Layout organizado, com seções distintas para gerenciamento de PRE-BOX, tabela de viagens, e lista de PRE-BOX.
+Requisitos Técnicos:
+Tecnologias:
+Frontend: HTML, JavaScript (React para interatividade), CSS (Tailwind CSS para estilização).
+Persistência: Dados armazenados localmente no localStorage do navegador para simplicidade (pode ser adaptado para um backend).
+CDNs: React e Babel via CDN para desenvolvimento rápido; Tailwind CSS configurado localmente para evitar o erro de produção.
+Ambiente: Sistema deve rodar em navegadores modernos (Chrome, Firefox, Edge) e ser acessível via servidor local para evitar problemas de CORS.
+Configuração do Tailwind CSS:
+Evitar o uso do CDN (cdn.tailwindcss.com) devido ao aviso de produção.
+Usar Tailwind CLI para gerar um arquivo output.css local.
+Artefato:
+Manter o artifact_id="62b4056a-c7be-4382-90a8-f38d45429349" para continuidade com o artefato anterior.
+Incluir apenas index.html como artefato principal, com referência a output.css.
+2. Especificação do Sistema
+Estrutura do Projeto:
+index.html: Arquivo principal contendo HTML, React (via CDN), e referência ao output.css.
+input.css: Arquivo de entrada para o Tailwind CSS com diretivas (@tailwind base, @tailwind components, @tailwind utilities).
+output.css: Arquivo CSS gerado pelo Tailwind CLI, contendo estilos compilados.
+tailwind.config.js: Configuração do Tailwind para escanear o index.html.
+package.json: Arquivo de configuração do Node.js para gerenciar dependências.
+Funcionalidades Detalhadas:
+Tabela de Viagens:
+Exibir todas as viagens com colunas especificadas.
+Coluna PRE-BOX com fundo colorido (verde, amarelo, vermelho) com base no status.
+Botão "Excluir Viagem" em cada linha, que remove a viagem e libera o PRE-BOX associado (status volta para LIVRE).
+Gerenciamento de PRE-BOX:
+Campo de input numérico para adicionar PRE-BOX, com validação:
+Aceita apenas IDs nos intervalos 50-55 ou 300-356.
+Impede IDs duplicados.
+Exibe alerta em caso de erro (ex.: "ID do PRE-BOX deve estar entre 50-55 ou 300-356").
+Botão "Adicionar PRE-BOX" que insere o PRE-BOX com status LIVRE.
+Seção "PRE-BOX Disponíveis" com cartões para cada PRE-BOX, contendo:
+Número do PRE-BOX (ex.: PRE-BOX 50).
+Status (LIVRE, VIAGEM com ID, BLOQUEADO).
+Botões de ação:
+Vincular Viagem (apenas para LIVRE): Cria uma nova viagem com ID gerado (ex.: VXXXX) e associa ao PRE-BOX, mudando o status para VIAGEM.
+Bloquear/Liberar (apenas para LIVRE ou BLOQUEADO): Alterna o status entre LIVRE e BLOQUEADO.
+Excluir (qualquer status): Remove o PRE-BOX, mas impede se estiver vinculado a uma viagem (exibe alerta).
+Persistência:
+Salvar PRE-BOX e viagens no localStorage para manter dados após recarregar a página.
+Carregar dados do localStorage ao inicializar a aplicação, com dados iniciais padrão se não houver dados salvos.
+Dados Iniciais (Placeholders):
+PRE-BOX:
+ID 50: LIVRE.
+ID 51: VIAGEM (vinculada à V1234).
+ID 300: BLOQUEADO.
+Viagem de Exemplo:
+ID: V1234
+Data: 2025-05-16
+Hora: 08:00
+Viagem Antiga: V1230
+PRE-BOX: 51
+BOX-D: 1
+Quantidade: 100
+Turno: 1
+Região: Sul
+Situação: Completa
+Data Prev. Manifesto: 2025-05-17
+Placeholders:
+TURNO: 1, 2, 3 (aguardando valores reais).
+SITUAÇÃO: Completa, Incompleta (aguardando detalhes).
+BOX-D: Numerado de 1 a 10 (ajustável).
