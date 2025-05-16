@@ -58,38 +58,28 @@ const PreBoxManagement: React.FC = () => {
 
       {/* PRE-BOX Cards */}
       <h3 className="text-xl font-semibold text-gray-800 mb-4">PRE-BOX Disponíveis</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         {sortedPreBoxes.map((preBox) => (
           <div key={preBox.id} className={`border rounded-lg shadow-sm overflow-hidden ${preBox.status === "LIVRE" ? "bg-green-100" : preBox.status === "VIAGEM" ? "bg-yellow-100" : "bg-red-100"}`}>
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h4 className={`text-lg font-bold ${preBox.status === "LIVRE" ? "text-green-800" : preBox.status === "VIAGEM" ? "text-yellow-800" : "text-red-800"}`}>
+            <div className="px-3 py-2">
+              <div className="flex justify-between items-center">
+                <h4 className={`text-sm font-bold ${preBox.status === "LIVRE" ? "text-green-800" : preBox.status === "VIAGEM" ? "text-yellow-800" : "text-red-800"}`}>
                   PRE-BOX {preBox.id}
                 </h4>
                 <StatusBadge status={preBox.status} />
               </div>
               
               {preBox.status === "VIAGEM" && (
-                <p className="text-sm mb-4 text-yellow-800">
-                  Viagem vinculada: <strong>{preBox.tripId}</strong>
+                <p className="text-xs mt-1 text-yellow-800">
+                  Viagem: <strong>{preBox.tripId}</strong>
                 </p>
               )}
               
-              <div className="flex flex-wrap gap-2 mt-4">
-                {preBox.status === "LIVRE" && (
-                  <button
-                    type="button"
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    onClick={() => showConfirmModal({ type: 'linkTrip', id: preBox.id })}
-                  >
-                    Vincular Viagem
-                  </button>
-                )}
-                
+              <div className="flex gap-1 mt-2">
                 {(preBox.status === "LIVRE" || preBox.status === "BLOQUEADO") && (
                   <button
                     type="button"
-                    className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white ${preBox.status === "LIVRE" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"} focus:outline-none focus:ring-2 focus:ring-offset-2 ${preBox.status === "LIVRE" ? "focus:ring-red-500" : "focus:ring-green-500"}`}
+                    className={`text-xs px-2 py-1 border border-transparent rounded shadow-sm text-white ${preBox.status === "LIVRE" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}`}
                     onClick={() => handleToggleStatus(preBox.id)}
                   >
                     {preBox.status === "LIVRE" ? "Bloquear" : "Liberar"}
@@ -99,7 +89,7 @@ const PreBoxManagement: React.FC = () => {
                 {preBox.status !== "VIAGEM" && (
                   <button
                     type="button"
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    className="text-xs px-2 py-1 border border-transparent rounded shadow-sm text-white bg-gray-600 hover:bg-gray-700"
                     onClick={() => showConfirmModal({ type: 'deletePreBox', id: preBox.id })}
                   >
                     Excluir
