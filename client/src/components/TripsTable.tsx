@@ -394,6 +394,9 @@ const TripsTable: React.FC = () => {
                         Status
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Data Prev. do Manifesto
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
@@ -532,6 +535,17 @@ const TripsTable: React.FC = () => {
                               <option value="Completa">Completa</option>
                               <option value="Incompleta">Incompleta</option>
                             </select>
+                          </td>
+                          
+                          {/* Data Prev. do Manifesto */}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.manifestDate || ''}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'manifestDate')}
+                              placeholder="Data do Manifesto"
+                            />
                           </td>
                           
                           {/* Ações */}
