@@ -12,6 +12,7 @@ import Resumo from "./components/Resumo";
 import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
 import { TripProvider, useTrip } from "./contexts/TripContext";
+import { CargasProvider } from "./contexts/CargasContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
@@ -69,8 +70,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <TripProvider>
-          <MainApp />
-          <Toaster />
+          <CargasProvider>
+            <MainApp />
+            <Toaster />
+          </CargasProvider>
         </TripProvider>
       </TooltipProvider>
     </QueryClientProvider>
