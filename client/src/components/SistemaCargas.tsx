@@ -140,32 +140,144 @@ export default function SistemaCargas() {
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
           
-          // Converter para JSON
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 'A' });
+          // Converter para JSON com cabeçalhos explícitos
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
           
-          // Processar os dados extraindo as colunas necessárias (A, G, H)
+          console.log(`Arquivo carregado: ${arquivoSelecionado.name}`);
+          console.log(`Número de linhas: ${jsonData.length}`);
+          
+          if (jsonData.length <= 1) {
+            console.error(`Arquivo sem dados: ${arquivoSelecionado.name}`);
+            alert("O arquivo não contém dados suficientes.");
+            setSelecionarArquivo(false);
+            setArquivoSelecionado(null);
+            return;
+          }
+          
+          // Log para verificar a estrutura dos dados
+          console.log("Dados do arquivo:", jsonData);
+          
+          // Obter dados das viagens existentes para vincular PRE-BOX e BOX-D
+          const viagensData = trips.reduce((acc, trip) => {
+            acc[trip.viagem] = {
+              preBox: trip.preBox || '',
+              boxD: trip.boxD || ''
+            };
+            return acc;
+          }, {} as Record<string, { preBox: string, boxD: string }>);
+          
+          // Processar os dados extraindo as colunas necessárias
           const processedData: Carga[] = [];
           
-          jsonData.forEach((row: any, index) => {
-            // Pular a primeira linha (cabeçalho)
-            if (index > 0) {
-              const dataHora = row['A'] ? new Date(row['A']) : new Date();
-              // Formatar a data/hora para o formato desejado
-              const horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-              
-              const novaCarga: Carga = {
-                id: (cargas.length + processedData.length + 1).toString(),
-                hora: horaFormatada,
-                viagem: row['G'] || '',
-                frota: row['H'] || '',
-                preBox: '',
-                boxD: '',
-                status: "LIVRE"
-              };
-              
-              processedData.push(novaCarga);
+          // Função para verificar se a célula contém uma data válida
+          const isValidDate = (value: any): boolean => {
+            if (!value) return false;
+            
+            // Se for um objeto Date
+            if (value instanceof Date) return !isNaN(value.getTime());
+            
+            // Se for uma string, tentar converter para Data
+            if (typeof value === 'string') {
+              const date = new Date(value);
+              return !isNaN(date.getTime());
             }
-          });
+            
+            // Se for um número, assumir que é um número serial do Excel
+            if (typeof value === 'number') {
+              const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+              return !isNaN(date.getTime());
+            }
+            
+            return false;
+          };
+          
+          // Processar os dados extraindo as colunas necessárias
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i] as any[];
+            
+            // Verificar se a linha tem dados suficientes
+            if (!row || row.length < 8) {
+              console.log(`Linha ${i+1} não tem dados suficientes:`, row);
+              continue;
+            }
+            
+            // A = coluna 0 (Data/Hora)
+            // G = coluna 6 (Viagem TMS)
+            // H = coluna 7 (Frota)
+            const dataHoraValue = row[0];
+            const viagemValue = row[6];
+            const frotaValue = row[7];
+            
+            console.log(`Linha ${i+1}:`, { dataHora: dataHoraValue, viagem: viagemValue, frota: frotaValue });
+            
+            if (!dataHoraValue || !viagemValue) {
+              console.log(`Linha ${i+1} não tem dados essenciais`);
+              continue;
+            }
+            
+            let horaFormatada = "";
+            
+            // Processar a data/hora
+            if (isValidDate(dataHoraValue)) {
+              let dataHora: Date;
+              
+              if (typeof dataHoraValue === 'string') {
+                dataHora = new Date(dataHoraValue);
+              } else if (typeof dataHoraValue === 'number') {
+                dataHora = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
+              } else if (dataHoraValue instanceof Date) {
+                dataHora = dataHoraValue;
+              } else {
+                console.log(`Formato de data não reconhecido na linha ${i+1}:`, dataHoraValue);
+                continue;
+              }
+              
+              // Verificar se a data é válida
+              if (!isNaN(dataHora.getTime())) {
+                horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              } else {
+                console.log(`Data inválida na linha ${i+1}:`, dataHoraValue);
+                continue;
+              }
+            } else if (typeof dataHoraValue === 'string') {
+              // Se não é uma data válida mas é uma string, vamos tentar extrair a hora
+              // Assumindo que pode ser apenas um horário como "04:05"
+              const timeMatch = dataHoraValue.match(/(\d{1,2}:\d{2})/);
+              if (timeMatch) {
+                horaFormatada = timeMatch[1];
+              } else {
+                console.log(`Não foi possível extrair a hora da linha ${i+1}:`, dataHoraValue);
+                continue;
+              }
+            } else {
+              console.log(`Formato de hora não reconhecido na linha ${i+1}:`, dataHoraValue);
+              continue;
+            }
+            
+            // Converter valores para string
+            const viagem = String(viagemValue || '');
+            const frota = String(frotaValue || '');
+            
+            // Obter PRE-BOX e BOX-D da lista de viagens existentes
+            const preBox = viagensData[viagem]?.preBox || '';
+            const boxD = viagensData[viagem]?.boxD || '';
+            
+            const novaCarga: Carga = {
+              id: (cargas.length + processedData.length + 1).toString(),
+              hora: horaFormatada,
+              viagem: viagem,
+              frota: frota,
+              preBox: preBox,
+              boxD: boxD,
+              status: "LIVRE"
+            };
+            
+            console.log(`Nova carga adicionada:`, novaCarga);
+            processedData.push(novaCarga);
+          }
+          
+          // Ordenar as cargas por data/hora
+          processedData.sort((a, b) => a.hora.localeCompare(b.hora));
           
           // Atualizar o estado com os novos dados
           const novaListaCargas = [...cargas, ...processedData];
@@ -178,17 +290,23 @@ export default function SistemaCargas() {
         } catch (error) {
           console.error("Erro ao processar o arquivo Excel:", error);
           alert(`Erro ao processar o arquivo: ${error}`);
+          setSelecionarArquivo(false);
+          setArquivoSelecionado(null);
         }
       };
       
       reader.onerror = () => {
         alert("Erro ao ler o arquivo");
+        setSelecionarArquivo(false);
+        setArquivoSelecionado(null);
       };
       
       reader.readAsArrayBuffer(arquivoSelecionado);
     } catch (error) {
       console.error("Erro ao importar a biblioteca XLSX:", error);
       alert(`Erro ao importar a biblioteca: ${error}`);
+      setSelecionarArquivo(false);
+      setArquivoSelecionado(null);
     }
   };
 
@@ -214,7 +332,7 @@ export default function SistemaCargas() {
   // Função para processar múltiplos arquivos automaticamente
   const buscarArquivosAutomaticamente = async () => {
     try {
-      // Simulando a seleção de dois arquivos para o exemplo
+      // Seleção de múltiplos arquivos
       const input = document.createElement('input');
       input.type = 'file';
       input.multiple = true;
@@ -231,6 +349,15 @@ export default function SistemaCargas() {
         try {
           const XLSX = await import('xlsx');
           let todasCargas: Carga[] = [];
+          
+          // Obter dados das viagens existentes para vincular PRE-BOX e BOX-D
+          const viagensData = trips.reduce((acc, trip) => {
+            acc[trip.viagem] = {
+              preBox: trip.preBox || '',
+              boxD: trip.boxD || ''
+            };
+            return acc;
+          }, {} as Record<string, { preBox: string, boxD: string }>);
           
           // Processar cada arquivo
           for (const file of files) {
@@ -254,44 +381,126 @@ export default function SistemaCargas() {
               const firstSheetName = workbook.SheetNames[0];
               const worksheet = workbook.Sheets[firstSheetName];
               
-              // Converter para JSON
-              const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 'A' });
+              // Converter para JSON com cabeçalhos explícitos
+              const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
               
-              // Processar os dados extraindo as colunas necessárias (A = Data/Hora, G = Viagem TMS, H = Frota)
-              jsonData.forEach((row: any, index) => {
-                // Pular a primeira linha (cabeçalho)
-                if (index > 0 && row['A']) {
+              console.log(`Arquivo carregado: ${file.name}`);
+              console.log(`Número de linhas: ${jsonData.length}`);
+              
+              if (jsonData.length <= 1) {
+                console.error(`Arquivo sem dados: ${file.name}`);
+                continue;
+              }
+              
+              // Log para verificar a estrutura dos dados
+              console.log("Dados do arquivo:", jsonData);
+              
+              // Função para verificar se a célula contém uma data válida
+              const isValidDate = (value: any): boolean => {
+                if (!value) return false;
+                
+                // Se for um objeto Date
+                if (value instanceof Date) return !isNaN(value.getTime());
+                
+                // Se for uma string, tentar converter para Data
+                if (typeof value === 'string') {
+                  const date = new Date(value);
+                  return !isNaN(date.getTime());
+                }
+                
+                // Se for um número, assumir que é um número serial do Excel
+                if (typeof value === 'number') {
+                  const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+                  return !isNaN(date.getTime());
+                }
+                
+                return false;
+              };
+              
+              // Processar os dados extraindo as colunas necessárias
+              for (let i = 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                
+                // Verificar se a linha tem dados suficientes
+                if (!row || row.length < 8) {
+                  console.log(`Linha ${i+1} não tem dados suficientes:`, row);
+                  continue;
+                }
+                
+                // A = coluna 0 (Data/Hora)
+                // G = coluna 6 (Viagem TMS)
+                // H = coluna 7 (Frota)
+                const dataHoraValue = row[0];
+                const viagemValue = row[6];
+                const frotaValue = row[7];
+                
+                console.log(`Linha ${i+1}:`, { dataHora: dataHoraValue, viagem: viagemValue, frota: frotaValue });
+                
+                if (!dataHoraValue || !viagemValue) {
+                  console.log(`Linha ${i+1} não tem dados essenciais`);
+                  continue;
+                }
+                
+                let horaFormatada = "";
+                
+                // Processar a data/hora
+                if (isValidDate(dataHoraValue)) {
                   let dataHora: Date;
                   
-                  // Manipular diferentes formatos de data
-                  if (typeof row['A'] === 'string') {
-                    dataHora = new Date(row['A']);
-                  } else if (typeof row['A'] === 'number') {
-                    // Excel guarda datas como números. Precisamos converter
-                    dataHora = new Date(Math.round((row['A'] - 25569) * 86400 * 1000));
+                  if (typeof dataHoraValue === 'string') {
+                    dataHora = new Date(dataHoraValue);
+                  } else if (typeof dataHoraValue === 'number') {
+                    dataHora = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
+                  } else if (dataHoraValue instanceof Date) {
+                    dataHora = dataHoraValue;
                   } else {
-                    dataHora = new Date(row['A']);
+                    console.log(`Formato de data não reconhecido na linha ${i+1}:`, dataHoraValue);
+                    continue;
                   }
                   
                   // Verificar se a data é válida
                   if (!isNaN(dataHora.getTime())) {
-                    const horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const dataFormatada = dataHora.toLocaleDateString();
-                    
-                    const novaCarga: Carga = {
-                      id: (cargas.length + todasCargas.length + 1).toString(),
-                      hora: horaFormatada,
-                      viagem: row['G'] || '',
-                      frota: row['H'] || '',
-                      preBox: '',
-                      boxD: '',
-                      status: "LIVRE"
-                    };
-                    
-                    todasCargas.push(novaCarga);
+                    horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                  } else {
+                    console.log(`Data inválida na linha ${i+1}:`, dataHoraValue);
+                    continue;
                   }
+                } else if (typeof dataHoraValue === 'string') {
+                  // Se não é uma data válida mas é uma string, vamos tentar extrair a hora
+                  // Assumindo que pode ser apenas um horário como "04:05"
+                  const timeMatch = dataHoraValue.match(/(\d{1,2}:\d{2})/);
+                  if (timeMatch) {
+                    horaFormatada = timeMatch[1];
+                  } else {
+                    console.log(`Não foi possível extrair a hora da linha ${i+1}:`, dataHoraValue);
+                    continue;
+                  }
+                } else {
+                  console.log(`Formato de hora não reconhecido na linha ${i+1}:`, dataHoraValue);
+                  continue;
                 }
-              });
+                
+                // Converter valores para string
+                const viagem = String(viagemValue || '');
+                const frota = String(frotaValue || '');
+                
+                // Obter PRE-BOX e BOX-D da lista de viagens existentes
+                const preBox = viagensData[viagem]?.preBox || '';
+                const boxD = viagensData[viagem]?.boxD || '';
+                
+                const novaCarga: Carga = {
+                  id: (cargas.length + todasCargas.length + 1).toString(),
+                  hora: horaFormatada,
+                  viagem: viagem,
+                  frota: frota,
+                  preBox: preBox,
+                  boxD: boxD,
+                  status: "LIVRE"
+                };
+                
+                console.log(`Nova carga adicionada:`, novaCarga);
+                todasCargas.push(novaCarga);
+              }
               
               console.log(`Arquivo ${file.name} processado: ${jsonData.length} linhas, ${todasCargas.length} cargas válidas`);
             } catch (error) {
