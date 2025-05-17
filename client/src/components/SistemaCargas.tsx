@@ -435,9 +435,19 @@ export default function SistemaCargas() {
                 const viagem = String(viagemValue || '');
                 const frota = String(frotaValue || '');
                 
-                // Obter PRE-BOX e BOX-D da lista de viagens existentes
-                const preBox = viagensData[viagem]?.preBox || '';
-                const boxD = viagensData[viagem]?.boxD || '';
+                // Buscar a viagem correspondente na aba Viagens pelo número da viagem
+                let preBox = '';
+                let boxD = '';
+                
+                // Buscar nas viagens existentes
+                const viagemEncontrada = trips.find(trip => trip.id === viagem);
+                if (viagemEncontrada) {
+                  console.log(`Viagem encontrada na aba Viagens: ${viagem} com PRE-BOX: ${viagemEncontrada.preBox}`);
+                  preBox = viagemEncontrada.preBox || '';
+                  boxD = viagemEncontrada.boxD || '';
+                } else {
+                  console.log(`Viagem não encontrada na aba Viagens: ${viagem}`);
+                }
                 
                 // Gerar um ID único baseado no timestamp e um número aleatório
                 const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${i}`;
