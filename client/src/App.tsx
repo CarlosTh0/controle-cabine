@@ -9,6 +9,7 @@ import PreBoxManagement from "./components/PreBoxManagement";
 import TripsTable from "./components/TripsTable";
 import PainelCargas from "./components/PainelCargas";
 import Resumo from "./components/Resumo";
+import SistemaCargas from "./components/SistemaCargas";
 import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
 import { TripProvider, useTrip } from "./contexts/TripContext";
@@ -17,7 +18,7 @@ import { ViagensProvider } from "./contexts/ViagensContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
-  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas">("dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -47,6 +48,7 @@ function MainApp() {
               {activeSection === "trips" && <TripsTable />}
               {activeSection === "painelCargas" && <PainelCargas />}
               {activeSection === "resumo" && <Resumo />}
+              {activeSection === "sistemaCargas" && <SistemaCargas />}
               <ConfirmationModal />
             </>
           ) : (

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 interface HeaderProps {
-  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo";
-  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo") => void;
+  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas";
+  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas") => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
@@ -48,6 +48,12 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
               className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
             >
               Resumo
+            </button>
+            <button 
+              onClick={() => setActiveSection("sistemaCargas")}
+              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+            >
+              Sistema de Cargas
             </button>
           </div>
         </nav>
@@ -108,9 +114,18 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
                 setActiveSection("resumo");
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
             >
               Resumo
+            </button>
+            <button 
+              onClick={() => {
+                setActiveSection("sistemaCargas");
+                setMobileMenuOpen(false);
+              }}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+            >
+              Sistema de Cargas
             </button>
           </div>
         </div>
