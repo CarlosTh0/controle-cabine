@@ -499,12 +499,12 @@ const TripsTable: React.FC = () => {
                               value={trip.shift}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
                             >
-                              <option value="1">1 - 1º Turno Dia</option>
-                              <option value="2">2 - 1º Turno Fechamento</option>
-                              <option value="3">3 - 2º Turno Dia</option>
-                              <option value="4">4 - 2º Turno Fechamento</option>
-                              <option value="5">5 - 3º Turno Dia</option>
-                              <option value="6">6 - 3º Turno Fechamento</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                              <option value="5">5</option>
+                              <option value="6">6</option>
                             </select>
                           </td>
                           
