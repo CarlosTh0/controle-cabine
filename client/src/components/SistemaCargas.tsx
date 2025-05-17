@@ -337,6 +337,26 @@ export default function SistemaCargas() {
             return timeMatch ? timeMatch[1] : "";
           };
           
+          // Função para buscar informações de PRE-BOX e BOX-D das viagens existentes
+          const buscarInfoViagem = (numeroViagem: string) => {
+            // Verificar todas as viagens na aba Viagens
+            console.log(`Buscando viagem #${numeroViagem} em ${trips.length} viagens`);
+            
+            // Verificar se o número da viagem (id) existe na aba Viagens
+            const viagemEncontrada = trips.find(trip => trip.id === numeroViagem);
+            
+            if (viagemEncontrada) {
+              console.log(`ENCONTRADA! Viagem ${numeroViagem} com PRE-BOX: ${viagemEncontrada.preBox}, BOX-D: ${viagemEncontrada.boxD}`);
+              return {
+                preBox: viagemEncontrada.preBox || '',
+                boxD: viagemEncontrada.boxD || ''
+              };
+            } else {
+              console.log(`NÃO ENCONTRADA! Viagem ${numeroViagem} não existe na aba Viagens`);
+              return { preBox: '', boxD: '' };
+            }
+          };
+          
           // Processar cada arquivo
           for (const file of files) {
             const reader = new FileReader();
@@ -436,18 +456,10 @@ export default function SistemaCargas() {
                 const frota = String(frotaValue || '');
                 
                 // Buscar a viagem correspondente na aba Viagens pelo número da viagem
-                let preBox = '';
-                let boxD = '';
-                
-                // Buscar nas viagens existentes
-                const viagemEncontrada = trips.find(trip => trip.id === viagem);
-                if (viagemEncontrada) {
-                  console.log(`Viagem encontrada na aba Viagens: ${viagem} com PRE-BOX: ${viagemEncontrada.preBox}`);
-                  preBox = viagemEncontrada.preBox || '';
-                  boxD = viagemEncontrada.boxD || '';
-                } else {
-                  console.log(`Viagem não encontrada na aba Viagens: ${viagem}`);
-                }
+                // Usar a função específica para buscar informações da viagem
+                const infoViagem = buscarInfoViagem(viagem);
+                const preBox = infoViagem.preBox;
+                const boxD = infoViagem.boxD;
                 
                 // Gerar um ID único baseado no timestamp e um número aleatório
                 const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${i}`;
