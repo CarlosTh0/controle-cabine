@@ -129,9 +129,18 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
                 setActiveSection("sistemaCargas");
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
             >
               Sistema de Cargas
+            </button>
+            <button 
+              onClick={() => {
+                setActiveSection("estatisticas");
+                setMobileMenuOpen(false);
+              }}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+            >
+              Estatísticas
             </button>
           </div>
         </div>

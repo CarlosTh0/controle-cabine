@@ -10,6 +10,7 @@ import TripsTable from "./components/TripsTable";
 import PainelCargas from "./components/PainelCargas";
 import Resumo from "./components/Resumo";
 import SistemaCargas from "./components/SistemaCargas";
+import EstatisticasAvancadas from "./components/EstatisticasAvancadas";
 import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
 import { TripProvider, useTrip } from "./contexts/TripContext";
@@ -18,7 +19,7 @@ import { ViagensProvider } from "./contexts/ViagensContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
-  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas">("dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -49,6 +50,7 @@ function MainApp() {
               {activeSection === "painelCargas" && <PainelCargas />}
               {activeSection === "resumo" && <Resumo />}
               {activeSection === "sistemaCargas" && <SistemaCargas />}
+              {activeSection === "estatisticas" && <EstatisticasAvancadas />}
               <ConfirmationModal />
             </>
           ) : (
