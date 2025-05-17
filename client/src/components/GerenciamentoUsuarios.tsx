@@ -373,19 +373,21 @@ const GerenciamentoUsuarios: React.FC = () => {
               <label htmlFor="permissionLevel" className="text-right font-medium">
                 Permissão
               </label>
-              <Select
-                value={newUser.permissionLevel}
-                onValueChange={(value: PermissionLevel) => setNewUser({...newUser, permissionLevel: value})}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecionar nível de permissão" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="col-span-3">
+                <Select
+                  value={newUser.permissionLevel}
+                  onValueChange={(value: PermissionLevel) => setNewUser({...newUser, permissionLevel: value})}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecionar nível de permissão" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" className="z-50 min-w-[200px]">
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="editor">Editor</SelectItem>
+                    <SelectItem value="viewer">Visualizador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
@@ -473,19 +475,21 @@ const GerenciamentoUsuarios: React.FC = () => {
                 <label htmlFor="edit-permissionLevel" className="text-right font-medium">
                   Permissão
                 </label>
-                <Select
-                  value={currentUser.permissionLevel}
-                  onValueChange={(value: PermissionLevel) => setCurrentUser({...currentUser, permissionLevel: value})}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecionar nível de permissão" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Administrador</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="viewer">Visualizador</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-3">
+                  <Select
+                    value={currentUser.permissionLevel}
+                    onValueChange={(value: PermissionLevel) => setCurrentUser({...currentUser, permissionLevel: value})}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecionar nível de permissão" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-50 min-w-[200px]">
+                      <SelectItem value="admin">Administrador</SelectItem>
+                      <SelectItem value="editor">Editor</SelectItem>
+                      <SelectItem value="viewer">Visualizador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               <div className="grid grid-cols-4 items-center gap-4">

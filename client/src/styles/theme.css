@@ -45,47 +45,47 @@
 
 /* Variáveis de cor para tema escuro */
 .dark-theme {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+  --background: #1a1a2e;
+  --foreground: #e6e6e9;
   
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
+  --card: #16213e;
+  --card-foreground: #e6e6e9;
   
-  --popover: #1e293b;
-  --popover-foreground: #f8fafc;
+  --popover: #16213e;
+  --popover-foreground: #e6e6e9;
   
-  --primary: #3b82f6;
-  --primary-foreground: #0f172a;
+  --primary: #4361ee;
+  --primary-foreground: #ffffff;
   
-  --secondary: #334155;
-  --secondary-foreground: #f8fafc;
+  --secondary: #3f4e78;
+  --secondary-foreground: #ffffff;
   
-  --muted: #293548;
-  --muted-foreground: #94a3b8;
+  --muted: #2c3762;
+  --muted-foreground: #a7acc7;
   
-  --accent: #2d3748;
-  --accent-foreground: #f8fafc;
+  --accent: #364176;
+  --accent-foreground: #ffffff;
   
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
+  --destructive: #f72585;
+  --destructive-foreground: #ffffff;
   
-  --border: #334155;
-  --input: #334155;
-  --ring: #3b82f6;
+  --border: #3f4e78;
+  --input: #1f2b54;
+  --ring: #4361ee;
   
   --radius: 0.5rem;
   
   /* Cores específicas da aplicação */
-  --header-bg: #1e293b;
-  --header-text: #f8fafc;
-  --footer-bg: #1e293b;
-  --footer-text: #94a3b8;
-  --table-header-bg: #1e293b;
-  --table-row-hover: #293548;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --info: #0ea5e9;
-  --error: #ef4444;
+  --header-bg: #0f3460;
+  --header-text: #ffffff;
+  --footer-bg: #0f3460;
+  --footer-text: #a7acc7;
+  --table-header-bg: #16213e;
+  --table-row-hover: #1f2b54;
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --info: #118ab2;
+  --error: #ef476f;
 }
 
 /* Aplicar cores nas classes */
@@ -127,10 +127,29 @@ footer {
 /* Ajustes para input e formulários no tema escuro */
 .dark-theme input,
 .dark-theme select,
-.dark-theme textarea {
+.dark-theme textarea,
+.dark-theme [data-radix-select-content],
+.dark-theme [data-radix-select-viewport],
+.dark-theme [data-radix-select-item] {
   background-color: var(--input);
   color: var(--foreground);
   border-color: var(--border);
+}
+
+/* Ajustes específicos para componentes Radix UI no tema escuro */
+.dark-theme [data-radix-select-content] {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.dark-theme [data-radix-select-item] {
+  color: var(--foreground) !important;
+}
+
+.dark-theme [data-radix-select-item][data-highlighted] {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
 }
 
 /* Transições suaves para mudança de tema */
