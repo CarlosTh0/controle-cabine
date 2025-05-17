@@ -317,6 +317,145 @@ const TripsTable: React.FC = () => {
         </div>
       </div>
       
+      {/* Modal de edição em massa */}
+      {showBulkEditForm && (
+        <div className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-start justify-center min-h-screen pt-20 px-4 pb-20 text-center">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <div className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all mx-auto max-w-lg w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Edição em Massa ({selectedTrips.length} viagens)
+                  </h3>
+                  <button
+                    type="button"
+                    className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                    onClick={cancelBulkEdit}
+                  >
+                    <span className="sr-only">Fechar</span>
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="mt-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label htmlFor="bulk-field" className="block text-sm font-medium text-gray-700">
+                        Campo para editar
+                      </label>
+                      <select
+                        id="bulk-field"
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        value={bulkEditField}
+                        onChange={(e) => setBulkEditField(e.target.value)}
+                      >
+                        <option value="">Selecione um campo</option>
+                        <option value="boxD">BOX-D</option>
+                        <option value="quantity">Quantidade</option>
+                        <option value="shift">Turno</option>
+                        <option value="region">Região</option>
+                        <option value="status">Status</option>
+                        <option value="manifestDate">Data Prev. do Manifesto</option>
+                      </select>
+                    </div>
+
+                    {bulkEditField && (
+                      <div>
+                        <label htmlFor="bulk-value" className="block text-sm font-medium text-gray-700">
+                          Novo valor
+                        </label>
+                        
+                        {/* Inputs específicos baseados no campo selecionado */}
+                        {(bulkEditField === 'boxD' || bulkEditField === 'quantity' || bulkEditField === 'manifestDate') && (
+                          <input
+                            type="text"
+                            id="bulk-value"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={bulkEditValue}
+                            onChange={(e) => setBulkEditValue(e.target.value)}
+                          />
+                        )}
+                        
+                        {bulkEditField === 'shift' && (
+                          <select
+                            id="bulk-value"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={bulkEditValue}
+                            onChange={(e) => setBulkEditValue(e.target.value)}
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                          </select>
+                        )}
+                        
+                        {bulkEditField === 'region' && (
+                          <select
+                            id="bulk-value"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={bulkEditValue}
+                            onChange={(e) => setBulkEditValue(e.target.value)}
+                          >
+                            <option value="P">P</option>
+                            <option value="T">T</option>
+                            <option value="L">L</option>
+                            <option value="S">S</option>
+                            <option value="N">N</option>
+                            <option value="IM">IM</option>
+                            <option value="AP">AP</option>
+                            <option value="SB">SB</option>
+                            <option value="EXP">EXP</option>
+                          </select>
+                        )}
+                        
+                        {bulkEditField === 'status' && (
+                          <select
+                            id="bulk-value"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={bulkEditValue}
+                            onChange={(e) => setBulkEditValue(e.target.value)}
+                          >
+                            <option value="1° Completa">1° Completa</option>
+                            <option value="1° Incompleta">1° Incompleta</option>
+                            <option value="2° Completa">2° Completa</option>
+                            <option value="2° Incompleta">2° Incompleta</option>
+                            <option value="3° Completa">3° Completa</option>
+                            <option value="3° Incompleta">3° Incompleta</option>
+                          </select>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={applyBulkEdit}
+                  disabled={!bulkEditField || !bulkEditValue}
+                >
+                  Aplicar a todos
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={cancelBulkEdit}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Create Trip Form - Popup simplificado */}
       {showCreateForm && (
         <div className="fixed z-50 inset-0 overflow-y-auto">
