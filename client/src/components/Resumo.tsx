@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useCargas } from "../contexts/CargasContext";
 
 interface ResumoCargas {
   descricao: string;
@@ -8,6 +9,8 @@ interface ResumoCargas {
 }
 
 export default function Resumo() {
+  const { totalFormadasNoDia, faltamFormar, totalChamada } = useCargas();
+  
   const [dataAtual, setDataAtual] = useState(() => {
     const hoje = new Date();
     const dia = String(hoje.getDate()).padStart(2, '0');
@@ -60,9 +63,9 @@ export default function Resumo() {
   const totalQtdVeiculos = cargasData.reduce((sum, item) => sum + item.qtdVeiculos, 0);
   const totalTotal = cargasData.reduce((sum, item) => sum + item.total, 0);
   
-  // Valores para métricas
-  const cargasParaFormarHoje = 201;
-  const cargasJaFormadasHoje = 178;
+  // Usando valores do contexto de Cargas
+  const cargasParaFormarHoje = totalChamada;
+  const cargasJaFormadasHoje = totalFormadasNoDia;
 
   const handleChangeCarga = (index: number, field: keyof ResumoCargas, value: string) => {
     if (field === 'descricao') return; // Não permite alterar a descrição
