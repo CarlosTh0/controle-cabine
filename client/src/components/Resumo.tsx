@@ -62,42 +62,45 @@ export default function Resumo() {
 
   // Atualizar dados quando as viagens mudarem
   useEffect(() => {
-    const newCargasData = [...cargasData];
-    
-    // Para cada turno, atualizamos:
-    // - qtdCargas = número de viagens (contagem de viagens)
-    // - qtdVeiculos = quantidade total de veículos (soma das quantidades)
-    // - total = soma dos veículos (igual a qtdVeiculos)
-    
-    // 1º Turno - Dia Seguinte (Código 1)
-    newCargasData[0].qtdCargas = viagensCategorizadas.turno1Dia.qtdViagens;
-    newCargasData[0].qtdVeiculos = viagensCategorizadas.turno1Dia.qtdVeiculos;
-    newCargasData[0].total = viagensCategorizadas.turno1Dia.qtdVeiculos;
-    
-    // 1º Turno - Fechamento (Código 2)
-    newCargasData[1].qtdCargas = viagensCategorizadas.turno1Fechamento.qtdViagens;
-    newCargasData[1].qtdVeiculos = viagensCategorizadas.turno1Fechamento.qtdVeiculos;
-    newCargasData[1].total = viagensCategorizadas.turno1Fechamento.qtdVeiculos;
-    
-    // 2º Turno - Dia Seguinte (Código 3)
-    newCargasData[2].qtdCargas = viagensCategorizadas.turno2Dia.qtdViagens;
-    newCargasData[2].qtdVeiculos = viagensCategorizadas.turno2Dia.qtdVeiculos;
-    newCargasData[2].total = viagensCategorizadas.turno2Dia.qtdVeiculos;
-    
-    // 2º Turno - Fechamento (Código 4)
-    newCargasData[3].qtdCargas = viagensCategorizadas.turno2Fechamento.qtdViagens;
-    newCargasData[3].qtdVeiculos = viagensCategorizadas.turno2Fechamento.qtdVeiculos;
-    newCargasData[3].total = viagensCategorizadas.turno2Fechamento.qtdVeiculos;
-    
-    // 3º Turno - Dia Seguinte (Código 5)
-    newCargasData[4].qtdCargas = viagensCategorizadas.turno3Dia.qtdViagens;
-    newCargasData[4].qtdVeiculos = viagensCategorizadas.turno3Dia.qtdVeiculos;
-    newCargasData[4].total = viagensCategorizadas.turno3Dia.qtdVeiculos;
-    
-    // 3º Turno - Fechamento (Código 6)
-    newCargasData[5].qtdCargas = viagensCategorizadas.turno3Fechamento.qtdViagens;
-    newCargasData[5].qtdVeiculos = viagensCategorizadas.turno3Fechamento.qtdVeiculos;
-    newCargasData[5].total = viagensCategorizadas.turno3Fechamento.qtdVeiculos;
+    // Criar um novo array com os dados atualizados
+    const newCargasData = [
+      {
+        descricao: "CARGAS FORMADAS PELO 1º TURNO DIA SEGUINTE",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno1Dia,
+        total: viagensCategorizadas.turno1Dia
+      },
+      {
+        descricao: "CARGAS FORMADAS PELO 1º TURNO FECHAMENTO",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno1Fechamento,
+        total: viagensCategorizadas.turno1Fechamento
+      },
+      {
+        descricao: "CARGAS FORMADAS PELO 2º TURNO DIA SEGUINTE",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno2Dia,
+        total: viagensCategorizadas.turno2Dia
+      },
+      {
+        descricao: "CARGAS FORMADAS PELO 2º TURNO FECHAMENTO",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno2Fechamento,
+        total: viagensCategorizadas.turno2Fechamento
+      },
+      {
+        descricao: "CARGAS FORMADAS PELO 3º TURNO DIA SEGUINTE",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno3Dia,
+        total: viagensCategorizadas.turno3Dia
+      },
+      {
+        descricao: "CARGAS FORMADAS PELO 3º TURNO FECHAMENTO",
+        qtdCargas: 1,
+        qtdVeiculos: viagensCategorizadas.turno3Fechamento,
+        total: viagensCategorizadas.turno3Fechamento
+      }
+    ];
     
     setCargasData(newCargasData);
   }, [viagensCategorizadas]);

@@ -37,44 +37,38 @@ export const ViagensProvider: React.FC<{children: ReactNode}> = ({ children }) =
   // Atualizar a categorização das viagens sempre que a lista de trips mudar
   useEffect(() => {
     const categorizar = () => {
-      const categorias: ViagensCategorizadas = {
-        turno1Dia: { qtdViagens: 0, qtdVeiculos: 0 },
-        turno1Fechamento: { qtdViagens: 0, qtdVeiculos: 0 },
-        turno2Dia: { qtdViagens: 0, qtdVeiculos: 0 },
-        turno2Fechamento: { qtdViagens: 0, qtdVeiculos: 0 },
-        turno3Dia: { qtdViagens: 0, qtdVeiculos: 0 },
-        turno3Fechamento: { qtdViagens: 0, qtdVeiculos: 0 }
+      const categorias = {
+        turno1Dia: 0,
+        turno1Fechamento: 0,
+        turno2Dia: 0,
+        turno2Fechamento: 0,
+        turno3Dia: 0,
+        turno3Fechamento: 0
       };
 
-      // Contabilizar quantidade de viagens e veículos por código de turno
+      // Contabilizar quantidade de veículos por código de turno
       trips.forEach(trip => {
         // Converter quantidade para número (default para 1 se não for válido)
         const quantidade = parseInt(trip.quantity) || 1;
         
         switch (trip.shift) {
           case "1":
-            categorias.turno1Dia.qtdViagens += 1;
-            categorias.turno1Dia.qtdVeiculos += quantidade;
+            categorias.turno1Dia += quantidade;
             break;
           case "2":
-            categorias.turno1Fechamento.qtdViagens += 1;
-            categorias.turno1Fechamento.qtdVeiculos += quantidade;
+            categorias.turno1Fechamento += quantidade;
             break;
           case "3":
-            categorias.turno2Dia.qtdViagens += 1;
-            categorias.turno2Dia.qtdVeiculos += quantidade;
+            categorias.turno2Dia += quantidade;
             break;
           case "4":
-            categorias.turno2Fechamento.qtdViagens += 1;
-            categorias.turno2Fechamento.qtdVeiculos += quantidade;
+            categorias.turno2Fechamento += quantidade;
             break;
           case "5":
-            categorias.turno3Dia.qtdViagens += 1;
-            categorias.turno3Dia.qtdVeiculos += quantidade;
+            categorias.turno3Dia += quantidade;
             break;
           case "6":
-            categorias.turno3Fechamento.qtdViagens += 1;
-            categorias.turno3Fechamento.qtdVeiculos += quantidade;
+            categorias.turno3Fechamento += quantidade;
             break;
         }
       });
