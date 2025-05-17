@@ -5,7 +5,7 @@ const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const { login } = useTrip();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
