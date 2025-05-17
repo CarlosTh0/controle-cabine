@@ -149,30 +149,9 @@ export default function Resumo() {
             {cargasData.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="border p-2 text-left">{item.descricao}</td>
-                <td className="border p-2 text-center">
-                  <input
-                    type="text"
-                    className="w-20 text-center"
-                    value={item.qtdCargas}
-                    onChange={(e) => handleChangeCarga(index, 'qtdCargas', e.target.value)}
-                  />
-                </td>
-                <td className="border p-2 text-center">
-                  <input
-                    type="text"
-                    className="w-20 text-center"
-                    value={item.qtdVeiculos}
-                    onChange={(e) => handleChangeCarga(index, 'qtdVeiculos', e.target.value)}
-                  />
-                </td>
-                <td className="border p-2 text-center">
-                  <input
-                    type="text"
-                    className="w-20 text-center"
-                    value={item.total}
-                    onChange={(e) => handleChangeCarga(index, 'total', e.target.value)}
-                  />
-                </td>
+                <td className="border p-2 text-center">{item.qtdCargas}</td>
+                <td className="border p-2 text-center">{item.qtdVeiculos}</td>
+                <td className="border p-2 text-center">{item.total}</td>
               </tr>
             ))}
             {/* Linha de totais */}
@@ -226,14 +205,7 @@ export default function Resumo() {
         </div>
       </div>
       
-      <div className="mt-4 text-right">
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => alert("Dados salvos com sucesso!")}
-        >
-          Salvar Dados
-        </button>
-      </div>
+      {/* Botão de salvar removido já que não há mais campos editáveis */}
     </div>
   );
 }
