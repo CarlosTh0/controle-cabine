@@ -11,6 +11,11 @@ const TripsTable: React.FC = () => {
   const [editValue, setEditValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [createDirectToBoxD, setCreateDirectToBoxD] = useState(false);
+  const [selectedTrips, setSelectedTrips] = useState<string[]>([]);
+  const [showBulkEditForm, setShowBulkEditForm] = useState(false);
+  const [bulkEditField, setBulkEditField] = useState<string>("");
+  const [bulkEditValue, setBulkEditValue] = useState<string>("");
+  const [selectAll, setSelectAll] = useState(false);
   const [tripData, setTripData] = useState({
     id: "",
     oldTrip: "",
@@ -190,6 +195,50 @@ const TripsTable: React.FC = () => {
       trip.oldTrip.toLowerCase().includes(searchLower)
     );
   });
+  
+  // Função para lidar com seleção de viagens para edição em massa
+  const handleTripSelection = (tripId: string) => {
+    setSelectedTrips(prev => {
+      if (prev.includes(tripId)) {
+        return prev.filter(id => id !== tripId);
+      } else {
+        return [...prev, tripId];
+      }
+    });
+  };
+  
+  // Função para selecionar/desselecionar todas as viagens
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedTrips([]);
+    } else {
+      setSelectedTrips(filteredTrips.map(trip => trip.id));
+    }
+    setSelectAll(!selectAll);
+  };
+  
+  // Função para aplicar edição em massa
+  const applyBulkEdit = () => {
+    if (!bulkEditField || selectedTrips.length === 0) return;
+    
+    selectedTrips.forEach(tripId => {
+      handleUpdateTrip(tripId, { [bulkEditField]: bulkEditValue });
+    });
+    
+    // Limpar formulário após aplicar edições
+    setBulkEditField("");
+    setBulkEditValue("");
+    setShowBulkEditForm(false);
+    setSelectedTrips([]);
+    setSelectAll(false);
+  };
+  
+  // Cancelar edição em massa
+  const cancelBulkEdit = () => {
+    setShowBulkEditForm(false);
+    setBulkEditField("");
+    setBulkEditValue("");
+  };
 
   // Keydown handler para o formulário de criação
   const handleFormKeyDown = (e: React.KeyboardEvent) => {
@@ -232,14 +281,27 @@ const TripsTable: React.FC = () => {
           )}
         </div>
         
-        <button
-          type="button"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-          Nova Viagem
-        </button>
+        <div className="flex space-x-2">
+          {selectedTrips.length > 0 ? (
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              onClick={() => setShowBulkEditForm(true)}
+            >
+              <Edit className="-ml-1 mr-2 h-5 w-5" />
+              Editar {selectedTrips.length} selecionados
+            </button>
+          ) : null}
+          
+          <button
+            type="button"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+            Nova Viagem
+          </button>
+        </div>
       </div>
       
       {/* Campo de pesquisa */}
@@ -455,37 +517,45 @@ const TripsTable: React.FC = () => {
                 <table className="w-full divide-y divide-gray-200" style={{ tableLayout: "fixed" }}>
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "11%" }}>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "3%" }}>
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={selectAll}
+                          onChange={handleSelectAll}
+                        />
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
                         Data / Hora
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
                         Viagem
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "9%" }}>
                         Viagem Antiga
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "7%" }}>
                         PRE-BOX
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "7%" }}>
                         BOX-D
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "9%" }}>
                         Quantidade
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "7%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "6%" }}>
                         Turno
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "7%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "6%" }}>
                         Região
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "11%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
                         Status
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "11%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
                         Data Prev. do Manifesto
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "9%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
                         Ações
                       </th>
                     </tr>
@@ -493,7 +563,15 @@ const TripsTable: React.FC = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredTrips.length > 0 ? (
                       filteredTrips.map(trip => (
-                        <tr key={trip.id}>
+                        <tr key={trip.id} className={selectedTrips.includes(trip.id) ? "bg-blue-50" : ""}>
+                          <td className="px-3 py-4 whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              checked={selectedTrips.includes(trip.id)}
+                              onChange={() => handleTripSelection(trip.id)}
+                            />
+                          </td>
                           {/* Data/Hora */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
