@@ -102,8 +102,11 @@ export default function SistemaCargas() {
 
   // Adicionar nova carga
   const adicionarCarga = () => {
+    // Gerar ID único para evitar conflitos de chaves
+    const uniqueId = `nova-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    
     const novaCarga: CargaItem = {
-      id: (store.cargas.length + 1).toString(),
+      id: uniqueId,
       hora: "00:00",
       viagem: "V000",
       frota: "F000",
@@ -436,8 +439,11 @@ export default function SistemaCargas() {
                 const preBox = viagensData[viagem]?.preBox || '';
                 const boxD = viagensData[viagem]?.boxD || '';
                 
+                // Gerar um ID único baseado no timestamp e um número aleatório
+                const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${i}`;
+                
                 const novaCarga: CargaItem = {
-                  id: (store.cargas.length + todasCargas.length + 1).toString(),
+                  id: uniqueId,
                   hora: horaFormatada,
                   viagem: viagem,
                   frota: frota,

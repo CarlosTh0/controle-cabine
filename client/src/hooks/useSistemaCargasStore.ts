@@ -64,9 +64,18 @@ export function useSistemaCargasStore() {
   
   // Remover uma carga
   const removeCarga = (id: string) => {
-    store.cargas = store.cargas.filter(c => c.id !== id);
-    updateCounts();
-    notifyListeners();
+    console.log("Removendo carga com ID:", id);
+    const cargaIndex = store.cargas.findIndex(c => c.id === id);
+    
+    if (cargaIndex !== -1) {
+      console.log("Carga encontrada na posição:", cargaIndex);
+      // Criar uma nova array sem a carga a ser removida
+      store.cargas = store.cargas.filter((_, index) => index !== cargaIndex);
+      updateCounts();
+      notifyListeners();
+    } else {
+      console.error("Carga não encontrada para remoção. ID:", id);
+    }
   };
   
   // Limpar todas as cargas
