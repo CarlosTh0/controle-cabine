@@ -7,7 +7,7 @@ export default function PainelCargas() {
     updateRegiao, 
     totalFormadasNoDia, 
     faltamFormar, 
-    totalChamada 
+    totalTurnos 
   } = useCargas();
   
   const [dataAtual] = React.useState(() => {
@@ -59,7 +59,7 @@ export default function PainelCargas() {
             ))}
             <tr className="font-bold bg-gray-100">
               <td className="border p-2">Totais</td>
-              <td className="border p-2">{totalChamada}</td>
+              <td className="border p-2">{totalFormadasNoDia}</td>
               <td className="border p-2">{regioes.reduce((total, r) => total + r.fechamento, 0)}</td>
               <td className="border p-2">{regioes.reduce((total, r) => total + r.antes, 0)}</td>
               <td className="border p-2">{regioes.reduce((total, r) => total + r.turno1, 0)}</td>

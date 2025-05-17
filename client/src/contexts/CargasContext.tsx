@@ -17,7 +17,7 @@ interface CargasContextType {
   setRegioes: React.Dispatch<React.SetStateAction<Regiao[]>>;
   totalFormadasNoDia: number;
   faltamFormar: number;
-  totalChamada: number;
+  totalTurnos: number;
   updateRegiao: (index: number, campo: string, valor: number) => void;
 }
 
@@ -61,9 +61,10 @@ export const CargasProvider: React.FC<{children: ReactNode}> = ({ children }) =>
   const totalizar = (campo: string): number => 
     regioes.reduce((total, r) => total + (r[campo] as number), 0);
 
-  const totalChamada = totalizar("chamada");
-  const totalFormadasNoDia = totalizar("turno1") + totalizar("turno2") + totalizar("turno3");
-  const faltamFormar = totalChamada - totalFormadasNoDia;
+  // Invertendo a lógica conforme solicitado
+  const totalFormadasNoDia = totalizar("chamada");
+  const totalTurnos = totalizar("turno1") + totalizar("turno2") + totalizar("turno3");
+  const faltamFormar = totalFormadasNoDia - totalTurnos;
 
   return (
     <CargasContext.Provider value={{
@@ -71,7 +72,7 @@ export const CargasProvider: React.FC<{children: ReactNode}> = ({ children }) =>
       setRegioes,
       totalFormadasNoDia,
       faltamFormar,
-      totalChamada,
+      totalTurnos,
       updateRegiao
     }}>
       {children}

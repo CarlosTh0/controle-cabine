@@ -9,7 +9,7 @@ interface ResumoCargas {
 }
 
 export default function Resumo() {
-  const { totalFormadasNoDia, faltamFormar, totalChamada } = useCargas();
+  const { totalFormadasNoDia, faltamFormar, totalTurnos } = useCargas();
   
   const [dataAtual, setDataAtual] = useState(() => {
     const hoje = new Date();
@@ -64,8 +64,8 @@ export default function Resumo() {
   const totalTotal = cargasData.reduce((sum, item) => sum + item.total, 0);
   
   // Usando valores do contexto de Cargas
-  const cargasParaFormarHoje = totalChamada;
-  const cargasJaFormadasHoje = totalFormadasNoDia;
+  const cargasParaFormarHoje = totalFormadasNoDia;
+  const cargasJaFormadasHoje = totalTurnos;
 
   const handleChangeCarga = (index: number, field: keyof ResumoCargas, value: string) => {
     if (field === 'descricao') return; // Não permite alterar a descrição
