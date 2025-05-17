@@ -66,37 +66,38 @@ export default function Resumo() {
     const newCargasData = [
       {
         descricao: "CARGAS FORMADAS PELO 1º TURNO DIA SEGUINTE",
-        qtdCargas: 1,
+        // Definir qtdCargas como 0 se não houver veículos para este turno
+        qtdCargas: viagensCategorizadas.turno1Dia > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno1Dia,
         total: viagensCategorizadas.turno1Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 1º TURNO FECHAMENTO",
-        qtdCargas: 1,
+        qtdCargas: viagensCategorizadas.turno1Fechamento > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno1Fechamento,
         total: viagensCategorizadas.turno1Fechamento
       },
       {
         descricao: "CARGAS FORMADAS PELO 2º TURNO DIA SEGUINTE",
-        qtdCargas: 1,
+        qtdCargas: viagensCategorizadas.turno2Dia > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno2Dia,
         total: viagensCategorizadas.turno2Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 2º TURNO FECHAMENTO",
-        qtdCargas: 1,
+        qtdCargas: viagensCategorizadas.turno2Fechamento > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno2Fechamento,
         total: viagensCategorizadas.turno2Fechamento
       },
       {
         descricao: "CARGAS FORMADAS PELO 3º TURNO DIA SEGUINTE",
-        qtdCargas: 1,
+        qtdCargas: viagensCategorizadas.turno3Dia > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno3Dia,
         total: viagensCategorizadas.turno3Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 3º TURNO FECHAMENTO",
-        qtdCargas: 1,
+        qtdCargas: viagensCategorizadas.turno3Fechamento > 0 ? 1 : 0,
         qtdVeiculos: viagensCategorizadas.turno3Fechamento,
         total: viagensCategorizadas.turno3Fechamento
       }
