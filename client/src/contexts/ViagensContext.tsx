@@ -46,26 +46,29 @@ export const ViagensProvider: React.FC<{children: ReactNode}> = ({ children }) =
         turno3Fechamento: 0
       };
 
-      // Contar viagens por código de turno
+      // Contabilizar quantidade de veículos por código de turno
       trips.forEach(trip => {
+        // Converter quantidade para número (default para 1 se não for válido)
+        const quantidade = parseInt(trip.quantity) || 1;
+        
         switch (trip.shift) {
           case "1":
-            categorias.turno1Dia++;
+            categorias.turno1Dia += quantidade;
             break;
           case "2":
-            categorias.turno1Fechamento++;
+            categorias.turno1Fechamento += quantidade;
             break;
           case "3":
-            categorias.turno2Dia++;
+            categorias.turno2Dia += quantidade;
             break;
           case "4":
-            categorias.turno2Fechamento++;
+            categorias.turno2Fechamento += quantidade;
             break;
           case "5":
-            categorias.turno3Dia++;
+            categorias.turno3Dia += quantidade;
             break;
           case "6":
-            categorias.turno3Fechamento++;
+            categorias.turno3Fechamento += quantidade;
             break;
         }
       });
