@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTrip } from "../contexts/TripContext";
 import StatusBadge from "./StatusBadge";
-import { PlusIcon, X, Edit, Check } from "lucide-react";
+import { PlusIcon, X, Edit, Check, Keyboard } from "lucide-react";
 
 const TripsTable: React.FC = () => {
   const { trips, preBoxes, handleCreateTrip, handleUpdateTrip, handleDeleteTrip, showConfirmModal } = useTrip();
@@ -23,6 +23,54 @@ const TripsTable: React.FC = () => {
   
   // Filtrar apenas PRE-BOXes com status LIVRE
   const availablePreBoxes = preBoxes.filter(pb => pb.status === "LIVRE");
+  
+  // Atalhos de teclado
+  const handleKeyboardShortcuts = useCallback((e: KeyboardEvent) => {
+    // Não aplica atalhos se estiver em campos de input
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) {
+      return;
+    }
+
+    // Alt+N: Nova viagem
+    if (e.altKey && e.key === 'n') {
+      e.preventDefault();
+      setShowCreateForm(true);
+      setCreateDirectToBoxD(false);
+    }
+    
+    // Alt+B: Nova viagem direto para BOX-D
+    if (e.altKey && e.key === 'b') {
+      e.preventDefault();
+      setShowCreateForm(true);
+      setCreateDirectToBoxD(true);
+    }
+    
+    // Esc: Fechar formulário
+    if (e.key === 'Escape' && showCreateForm) {
+      e.preventDefault();
+      setShowCreateForm(false);
+      setCreateDirectToBoxD(false);
+    }
+    
+    // Alt+F: Focar na busca
+    if (e.altKey && e.key === 'f') {
+      e.preventDefault();
+      const searchInput = document.getElementById('trip-search');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+  }, [showCreateForm]);
+
+  useEffect(() => {
+    // Adiciona os event listeners para os atalhos
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    
+    // Cleanup quando o componente for desmontado
+    return () => {
+      document.removeEventListener('keydown', handleKeyboardShortcuts);
+    };
+  }, [handleKeyboardShortcuts]);
 
   // Obter data e hora atuais formatadas
   const getCurrentDate = () => {
