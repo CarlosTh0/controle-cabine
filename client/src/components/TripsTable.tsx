@@ -24,53 +24,64 @@ const TripsTable: React.FC = () => {
   // Filtrar apenas PRE-BOXes com status LIVRE
   const availablePreBoxes = preBoxes.filter(pb => pb.status === "LIVRE");
   
-  // Atalhos de teclado
-  const handleKeyboardShortcuts = useCallback((e: KeyboardEvent) => {
-    // Não aplica atalhos se estiver em campos de input
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) {
-      return;
-    }
-
-    // Alt+N: Nova viagem
-    if (e.altKey && e.key === 'n') {
-      e.preventDefault();
-      setShowCreateForm(true);
-      setCreateDirectToBoxD(false);
-    }
-    
-    // Alt+B: Nova viagem direto para BOX-D
-    if (e.altKey && e.key === 'b') {
-      e.preventDefault();
-      setShowCreateForm(true);
-      setCreateDirectToBoxD(true);
-    }
-    
-    // Esc: Fechar formulário
-    if (e.key === 'Escape' && showCreateForm) {
-      e.preventDefault();
-      setShowCreateForm(false);
-      setCreateDirectToBoxD(false);
-    }
-    
-    // Alt+F: Focar na busca
-    if (e.altKey && e.key === 'f') {
-      e.preventDefault();
-      const searchInput = document.getElementById('trip-search');
-      if (searchInput) {
-        searchInput.focus();
-      }
-    }
-  }, [showCreateForm]);
-
+  // Estado para mostrar/esconder a legenda de atalhos
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  
+  // Gerenciador de atalhos de teclado
   useEffect(() => {
-    // Adiciona os event listeners para os atalhos
-    document.addEventListener('keydown', handleKeyboardShortcuts);
-    
-    // Cleanup quando o componente for desmontado
-    return () => {
-      document.removeEventListener('keydown', handleKeyboardShortcuts);
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Ignora atalhos quando estiver em campos de input
+      if (e.target instanceof HTMLInputElement || 
+          e.target instanceof HTMLTextAreaElement || 
+          e.target instanceof HTMLSelectElement) {
+        return;
+      }
+
+      // Alt+N: Nova viagem
+      if (e.altKey && e.key === 'n') {
+        e.preventDefault();
+        setShowCreateForm(true);
+        setCreateDirectToBoxD(false);
+      }
+      
+      // Alt+B: Nova viagem direto para BOX-D
+      if (e.altKey && e.key === 'b') {
+        e.preventDefault();
+        setShowCreateForm(true);
+        setCreateDirectToBoxD(true);
+      }
+      
+      // Esc: Fechar formulário
+      if (e.key === 'Escape' && showCreateForm) {
+        e.preventDefault();
+        setShowCreateForm(false);
+        setCreateDirectToBoxD(false);
+      }
+      
+      // Alt+F: Focar na busca
+      if (e.altKey && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.getElementById('trip-search');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+      
+      // Alt+?: Mostrar/esconder legenda de atalhos
+      if (e.altKey && e.key === '/') {
+        e.preventDefault();
+        setShowShortcuts(prev => !prev);
+      }
     };
-  }, [handleKeyboardShortcuts]);
+    
+    // Adiciona o listener
+    document.addEventListener('keydown', handleKeydown);
+    
+    // Remove o listener quando o componente for desmontado
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+    };
+  }, [showCreateForm]);
 
   // Obter data e hora atuais formatadas
   const getCurrentDate = () => {
@@ -197,7 +208,30 @@ const TripsTable: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Gestão de Viagens</h2>
+        <div className="flex items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Gestão de Viagens</h2>
+          <button 
+            className="ml-3 p-1 text-gray-500 hover:text-gray-800 focus:outline-none"
+            onClick={() => setShowShortcuts(!showShortcuts)}
+            title="Mostrar atalhos de teclado"
+          >
+            <Keyboard className="h-5 w-5" />
+          </button>
+          
+          {showShortcuts && (
+            <div className="absolute mt-20 ml-0 z-10 bg-white rounded-md shadow-lg p-4 border border-gray-200">
+              <h3 className="text-md font-semibold mb-2">Atalhos de Teclado</h3>
+              <ul className="text-sm space-y-1">
+                <li><span className="font-mono bg-gray-100 px-1">Alt + N</span> - Nova viagem</li>
+                <li><span className="font-mono bg-gray-100 px-1">Alt + B</span> - Nova viagem direto para BOX-D</li>
+                <li><span className="font-mono bg-gray-100 px-1">Alt + F</span> - Buscar viagens</li>
+                <li><span className="font-mono bg-gray-100 px-1">Esc</span> - Fechar janela atual</li>
+                <li><span className="font-mono bg-gray-100 px-1">Alt + /</span> - Mostrar/ocultar atalhos</li>
+              </ul>
+            </div>
+          )}
+        </div>
+        
         <button
           type="button"
           className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
