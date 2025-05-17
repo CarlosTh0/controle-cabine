@@ -308,8 +308,15 @@ const TripsTable: React.FC = () => {
                             value={tripData.region}
                             onChange={(e) => setTripData({...tripData, region: e.target.value})}
                           >
-                            <option value="Norte">Norte</option>
-                            <option value="Sul">Sul</option>
+                            <option value="Pranchinha">Pranchinha (P)</option>
+                            <option value="Tegma">Tegma (T)</option>
+                            <option value="Localiza">Localiza (L)</option>
+                            <option value="Sul">Sul (S)</option>
+                            <option value="Norte">Norte (N)</option>
+                            <option value="Int. De Minas">Int. De Minas (IM)</option>
+                            <option value="Auto Port">Auto Port (AP)</option>
+                            <option value="Sobras">Sobras (SB)</option>
+                            <option value="Exportação">Exportação (EXP)</option>
                             <option value="Leste">Leste</option>
                             <option value="Oeste">Oeste</option>
                           </select>
@@ -516,8 +523,15 @@ const TripsTable: React.FC = () => {
                               value={trip.region}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
                             >
-                              <option value="Norte">Norte</option>
-                              <option value="Sul">Sul</option>
+                              <option value="Pranchinha">Pranchinha (P)</option>
+                              <option value="Tegma">Tegma (T)</option>
+                              <option value="Localiza">Localiza (L)</option>
+                              <option value="Sul">Sul (S)</option>
+                              <option value="Norte">Norte (N)</option>
+                              <option value="Int. De Minas">Int. De Minas (IM)</option>
+                              <option value="Auto Port">Auto Port (AP)</option>
+                              <option value="Sobras">Sobras (SB)</option>
+                              <option value="Exportação">Exportação (EXP)</option>
                               <option value="Leste">Leste</option>
                               <option value="Oeste">Oeste</option>
                             </select>
