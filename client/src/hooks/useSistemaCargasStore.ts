@@ -65,12 +65,15 @@ export function useSistemaCargasStore() {
   // Remover uma carga
   const removeCarga = (id: string) => {
     console.log("Removendo carga com ID:", id);
-    const cargaIndex = store.cargas.findIndex(c => c.id === id);
+    // Usar filtro direto pelo ID da carga, que é mais confiável
+    const cargasAntes = store.cargas.length;
+    store.cargas = store.cargas.filter(carga => carga.id !== id);
+    const cargasDepois = store.cargas.length;
     
-    if (cargaIndex !== -1) {
-      console.log("Carga encontrada na posição:", cargaIndex);
-      // Criar uma nova array sem a carga a ser removida
-      store.cargas = store.cargas.filter((_, index) => index !== cargaIndex);
+    console.log(`Cargas antes: ${cargasAntes}, cargas depois: ${cargasDepois}`);
+    
+    if (cargasAntes !== cargasDepois) {
+      console.log("Carga removida com sucesso");
       updateCounts();
       notifyListeners();
     } else {
