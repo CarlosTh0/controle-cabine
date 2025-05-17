@@ -299,24 +299,7 @@ const TripsTable: React.FC = () => {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div>
-                          <label htmlFor="turno" className="block text-sm font-medium text-gray-700">
-                            Código de Turno
-                          </label>
-                          <select
-                            id="turno"
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            value={tripData.shift}
-                            onChange={(e) => setTripData({...tripData, shift: e.target.value})}
-                          >
-                            <option value="1">1 - 1º TURNO (BOX-D sem PRE-BOX)</option>
-                            <option value="2">2 - 1º TURNO (via PRE-BOX)</option>
-                            <option value="3">3 - 2º TURNO (BOX-D sem PRE-BOX)</option>
-                            <option value="4">4 - 2º TURNO (via PRE-BOX)</option>
-                            <option value="5">5 - 3º TURNO (BOX-D sem PRE-BOX)</option>
-                            <option value="6">6 - 3º TURNO (via PRE-BOX)</option>
-                          </select>
-                        </div>
+                        {/* Campo de Turno foi removido do popup e agora é editável diretamente na tabela */}
                         <div>
                           <label htmlFor="region" className="block text-sm font-medium text-gray-700">
                             Região
@@ -516,9 +499,12 @@ const TripsTable: React.FC = () => {
                               value={trip.shift}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
                             >
-                              <option value="1">1</option>
-                              <option value="2">2</option>
-                              <option value="3">3</option>
+                              <option value="1">1 - 1º Turno Dia</option>
+                              <option value="2">2 - 1º Turno Fechamento</option>
+                              <option value="3">3 - 2º Turno Dia</option>
+                              <option value="4">4 - 2º Turno Fechamento</option>
+                              <option value="5">5 - 3º Turno Dia</option>
+                              <option value="6">6 - 3º Turno Fechamento</option>
                             </select>
                           </td>
                           
