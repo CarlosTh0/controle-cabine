@@ -5,30 +5,28 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useTrip } from "../contexts/TripContext";
-
-import SistemaCargasService, { CargaItem } from "../services/SistemaCargasService";
+import useSistemaCargasStore, { CargaItem } from "../hooks/useSistemaCargasStore";
 
 export default function SistemaCargas() {
   const { trips } = useTrip();
-  const servicoCargas = SistemaCargasService.getInstance();
+  const store = useSistemaCargasStore();
   
-  // Estados locais para o componente
-  const [cargas, setCargas] = useState<CargaItem[]>(servicoCargas.cargas);
+  // Estados locais do componente
+  const [cargas, setCargas] = useState<CargaItem[]>(store.cargas);
   const [filtro, setFiltro] = useState("");
   const [selecionarArquivo, setSelecionarArquivo] = useState(false);
   const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
   const [ordenacao, setOrdenacao] = useState<"hora" | "viagem" | "frota" | "preBox" | "boxD" | "status">("hora");
   
   // Estatísticas
-  const [totalViagens, setTotalViagens] = useState(servicoCargas.totalViagens);
-  const [totalDisponiveis, setTotalDisponiveis] = useState(servicoCargas.totalDisponiveis);
-  const [totalEmCarregamento, setTotalEmCarregamento] = useState(servicoCargas.totalEmCarregamento);
-  const [totalCompletadas, setTotalCompletadas] = useState(servicoCargas.totalCompletadas);
+  const [totalViagens, setTotalViagens] = useState(store.totalViagens);
+  const [totalDisponiveis, setTotalDisponiveis] = useState(store.totalDisponiveis);
+  const [totalEmCarregamento, setTotalEmCarregamento] = useState(store.totalEmCarregamento);
+  const [totalCompletadas, setTotalCompletadas] = useState(store.totalCompletadas);
 
-  // Inicializar e subscrever a mudanças
+  // Inicializar com dados se for a primeira vez
   useEffect(() => {
-    // Se não tiver dados, adicionar alguns dados iniciais para demonstração
-    if (servicoCargas.cargas.length === 0) {
+    if (store.cargas.length === 0) {
       const cargasIniciais: CargaItem[] = [
         {
           id: "1",
@@ -77,20 +75,21 @@ export default function SistemaCargas() {
         }
       ];
       
-      servicoCargas.addCargas(cargasIniciais);
+      // Adicionar dados iniciais ao store
+      store.addCargas(cargasIniciais);
     }
     
-    // Função para atualizar os estados locais quando o serviço mudar
+    // Função para atualizar os estados locais quando o store mudar
     const atualizarEstadosLocais = () => {
-      setCargas(servicoCargas.cargas);
-      setTotalViagens(servicoCargas.totalViagens);
-      setTotalDisponiveis(servicoCargas.totalDisponiveis);
-      setTotalEmCarregamento(servicoCargas.totalEmCarregamento);
-      setTotalCompletadas(servicoCargas.totalCompletadas);
+      setCargas(store.cargas);
+      setTotalViagens(store.totalViagens);
+      setTotalDisponiveis(store.totalDisponiveis);
+      setTotalEmCarregamento(store.totalEmCarregamento);
+      setTotalCompletadas(store.totalCompletadas);
     };
     
-    // Subscrever a mudanças no serviço
-    const unsubscribe = servicoCargas.subscribe(atualizarEstadosLocais);
+    // Subscrever a mudanças no store
+    const unsubscribe = store.subscribe(atualizarEstadosLocais);
     
     // Carregar estado inicial
     atualizarEstadosLocais();
@@ -99,12 +98,12 @@ export default function SistemaCargas() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [store]);
 
   // Adicionar nova carga
   const adicionarCarga = () => {
-    const novaCarga: Carga = {
-      id: (cargas.length + 1).toString(),
+    const novaCarga: CargaItem = {
+      id: (store.cargas.length + 1).toString(),
       hora: "00:00",
       viagem: "V000",
       frota: "F000",
@@ -113,19 +112,17 @@ export default function SistemaCargas() {
       status: "LIVRE"
     };
     
-    const novaLista = [...cargas, novaCarga];
-    setCargas(novaLista);
-    atualizarEstatisticas(novaLista);
+    store.addCarga(novaCarga);
   };
 
   // Mudar status de uma carga
-  const mudarStatus = (id: string, novoStatus: Carga["status"]) => {
-    const novaLista = cargas.map(carga => 
-      carga.id === id ? { ...carga, status: novoStatus } : carga
-    );
-    
-    setCargas(novaLista);
-    atualizarEstatisticas(novaLista);
+  const mudarStatus = (id: string, novoStatus: CargaItem["status"]) => {
+    store.updateCarga(id, { status: novoStatus });
+  };
+
+  // Remover uma carga
+  const removerCarga = (id: string) => {
+    store.removeCarga(id);
   };
 
   // Processar o arquivo selecionado
@@ -166,37 +163,24 @@ export default function SistemaCargas() {
           console.log("Dados do arquivo:", jsonData);
           
           // Obter dados das viagens existentes para vincular PRE-BOX e BOX-D
-          const viagensData = trips.reduce((acc, trip) => {
-            acc[trip.viagem] = {
-              preBox: trip.preBox || '',
-              boxD: trip.boxD || ''
-            };
-            return acc;
-          }, {} as Record<string, { preBox: string, boxD: string }>);
+          const viagensData: Record<string, { preBox: string, boxD: string }> = {};
+          
+          trips.forEach((trip: any) => {
+            if (trip.viagem) {
+              viagensData[trip.viagem] = {
+                preBox: trip.preBox || '',
+                boxD: trip.boxD || ''
+              };
+            }
+          });
           
           // Processar os dados extraindo as colunas necessárias
-          const processedData: Carga[] = [];
+          const processedData: CargaItem[] = [];
           
-          // Função para verificar se a célula contém uma data válida
-          const isValidDate = (value: any): boolean => {
-            if (!value) return false;
-            
-            // Se for um objeto Date
-            if (value instanceof Date) return !isNaN(value.getTime());
-            
-            // Se for uma string, tentar converter para Data
-            if (typeof value === 'string') {
-              const date = new Date(value);
-              return !isNaN(date.getTime());
-            }
-            
-            // Se for um número, assumir que é um número serial do Excel
-            if (typeof value === 'number') {
-              const date = new Date(Math.round((value - 25569) * 86400 * 1000));
-              return !isNaN(date.getTime());
-            }
-            
-            return false;
+          // Função para extrair hora de uma string de data/hora
+          const extrairHora = (dataHoraStr: string): string => {
+            const timeMatch = dataHoraStr.match(/(\d{1,2}:\d{2})/);
+            return timeMatch ? timeMatch[1] : "";
           };
           
           // Processar os dados extraindo as colunas necessárias
@@ -225,40 +209,35 @@ export default function SistemaCargas() {
             
             let horaFormatada = "";
             
-            // Processar a data/hora
-            if (isValidDate(dataHoraValue)) {
-              let dataHora: Date;
-              
-              if (typeof dataHoraValue === 'string') {
-                dataHora = new Date(dataHoraValue);
-              } else if (typeof dataHoraValue === 'number') {
-                dataHora = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
-              } else if (dataHoraValue instanceof Date) {
-                dataHora = dataHoraValue;
-              } else {
-                console.log(`Formato de data não reconhecido na linha ${i+1}:`, dataHoraValue);
-                continue;
+            // Processar a data/hora baseado no tipo
+            if (typeof dataHoraValue === 'string') {
+              horaFormatada = extrairHora(dataHoraValue);
+              if (!horaFormatada) {
+                try {
+                  const dt = new Date(dataHoraValue);
+                  if (!isNaN(dt.getTime())) {
+                    horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                  }
+                } catch (e) {
+                  console.log(`Erro ao processar data: ${e}`);
+                }
               }
-              
-              // Verificar se a data é válida
-              if (!isNaN(dataHora.getTime())) {
-                horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-              } else {
-                console.log(`Data inválida na linha ${i+1}:`, dataHoraValue);
-                continue;
+            } else if (typeof dataHoraValue === 'number') {
+              // Excel guarda datas como números
+              try {
+                const dt = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
+                if (!isNaN(dt.getTime())) {
+                  horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+              } catch (e) {
+                console.log(`Erro ao processar número como data: ${e}`);
               }
-            } else if (typeof dataHoraValue === 'string') {
-              // Se não é uma data válida mas é uma string, vamos tentar extrair a hora
-              // Assumindo que pode ser apenas um horário como "04:05"
-              const timeMatch = dataHoraValue.match(/(\d{1,2}:\d{2})/);
-              if (timeMatch) {
-                horaFormatada = timeMatch[1];
-              } else {
-                console.log(`Não foi possível extrair a hora da linha ${i+1}:`, dataHoraValue);
-                continue;
-              }
-            } else {
-              console.log(`Formato de hora não reconhecido na linha ${i+1}:`, dataHoraValue);
+            } else if (dataHoraValue instanceof Date) {
+              horaFormatada = dataHoraValue.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            if (!horaFormatada) {
+              console.log(`Não foi possível extrair hora da linha ${i+1}`);
               continue;
             }
             
@@ -270,8 +249,8 @@ export default function SistemaCargas() {
             const preBox = viagensData[viagem]?.preBox || '';
             const boxD = viagensData[viagem]?.boxD || '';
             
-            const novaCarga: Carga = {
-              id: (cargas.length + processedData.length + 1).toString(),
+            const novaCarga: CargaItem = {
+              id: (store.cargas.length + processedData.length + 1).toString(),
               hora: horaFormatada,
               viagem: viagem,
               frota: frota,
@@ -284,13 +263,11 @@ export default function SistemaCargas() {
             processedData.push(novaCarga);
           }
           
-          // Ordenar as cargas por data/hora
+          // Ordenar as cargas por hora
           processedData.sort((a, b) => a.hora.localeCompare(b.hora));
           
-          // Atualizar o estado com os novos dados
-          const novaListaCargas = [...cargas, ...processedData];
-          setCargas(novaListaCargas);
-          atualizarEstatisticas(novaListaCargas);
+          // Adicionar as cargas processadas ao store
+          store.addCargas(processedData);
           
           alert(`Arquivo "${arquivoSelecionado.name}" processado com sucesso! ${processedData.length} registros importados.`);
           setSelecionarArquivo(false);
@@ -317,25 +294,6 @@ export default function SistemaCargas() {
       setArquivoSelecionado(null);
     }
   };
-
-  // Filtrar as cargas com base na busca
-  const cargasFiltradas = cargas.filter(carga => 
-    filtro === "" || 
-    carga.viagem.toLowerCase().includes(filtro.toLowerCase()) ||
-    carga.frota.toLowerCase().includes(filtro.toLowerCase()) ||
-    carga.preBox.toLowerCase().includes(filtro.toLowerCase()) ||
-    carga.boxD.toLowerCase().includes(filtro.toLowerCase())
-  );
-
-  // Ordenar as cargas
-  const cargasOrdenadas = [...cargasFiltradas].sort((a, b) => {
-    if (ordenacao === "hora") return a.hora.localeCompare(b.hora);
-    if (ordenacao === "viagem") return a.viagem.localeCompare(b.viagem);
-    if (ordenacao === "frota") return a.frota.localeCompare(b.frota);
-    if (ordenacao === "preBox") return a.preBox.localeCompare(b.preBox);
-    if (ordenacao === "boxD") return a.boxD.localeCompare(b.boxD);
-    return a.status.localeCompare(b.status);
-  });
   
   // Função para processar múltiplos arquivos automaticamente
   const buscarArquivosAutomaticamente = async () => {
@@ -356,16 +314,25 @@ export default function SistemaCargas() {
         
         try {
           const XLSX = await import('xlsx');
-          let todasCargas: Carga[] = [];
+          let todasCargas: CargaItem[] = [];
           
           // Obter dados das viagens existentes para vincular PRE-BOX e BOX-D
-          const viagensData = trips.reduce((acc, trip) => {
-            acc[trip.viagem] = {
-              preBox: trip.preBox || '',
-              boxD: trip.boxD || ''
-            };
-            return acc;
-          }, {} as Record<string, { preBox: string, boxD: string }>);
+          const viagensData: Record<string, { preBox: string, boxD: string }> = {};
+          
+          trips.forEach((trip: any) => {
+            if (trip.viagem) {
+              viagensData[trip.viagem] = {
+                preBox: trip.preBox || '',
+                boxD: trip.boxD || ''
+              };
+            }
+          });
+          
+          // Função para extrair hora de uma string de data/hora
+          const extrairHora = (dataHoraStr: string): string => {
+            const timeMatch = dataHoraStr.match(/(\d{1,2}:\d{2})/);
+            return timeMatch ? timeMatch[1] : "";
+          };
           
           // Processar cada arquivo
           for (const file of files) {
@@ -403,31 +370,9 @@ export default function SistemaCargas() {
               // Log para verificar a estrutura dos dados
               console.log("Dados do arquivo:", jsonData);
               
-              // Função para verificar se a célula contém uma data válida
-              const isValidDate = (value: any): boolean => {
-                if (!value) return false;
-                
-                // Se for um objeto Date
-                if (value instanceof Date) return !isNaN(value.getTime());
-                
-                // Se for uma string, tentar converter para Data
-                if (typeof value === 'string') {
-                  const date = new Date(value);
-                  return !isNaN(date.getTime());
-                }
-                
-                // Se for um número, assumir que é um número serial do Excel
-                if (typeof value === 'number') {
-                  const date = new Date(Math.round((value - 25569) * 86400 * 1000));
-                  return !isNaN(date.getTime());
-                }
-                
-                return false;
-              };
-              
-              // Processar os dados extraindo as colunas necessárias
+              // Processar os dados das linhas
               for (let i = 1; i < jsonData.length; i++) {
-                const row = jsonData[i];
+                const row = jsonData[i] as any[];
                 
                 // Verificar se a linha tem dados suficientes
                 if (!row || row.length < 8) {
@@ -451,40 +396,35 @@ export default function SistemaCargas() {
                 
                 let horaFormatada = "";
                 
-                // Processar a data/hora
-                if (isValidDate(dataHoraValue)) {
-                  let dataHora: Date;
-                  
-                  if (typeof dataHoraValue === 'string') {
-                    dataHora = new Date(dataHoraValue);
-                  } else if (typeof dataHoraValue === 'number') {
-                    dataHora = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
-                  } else if (dataHoraValue instanceof Date) {
-                    dataHora = dataHoraValue;
-                  } else {
-                    console.log(`Formato de data não reconhecido na linha ${i+1}:`, dataHoraValue);
-                    continue;
+                // Processar a data/hora baseado no tipo
+                if (typeof dataHoraValue === 'string') {
+                  horaFormatada = extrairHora(dataHoraValue);
+                  if (!horaFormatada) {
+                    try {
+                      const dt = new Date(dataHoraValue);
+                      if (!isNaN(dt.getTime())) {
+                        horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                      }
+                    } catch (e) {
+                      console.log(`Erro ao processar data: ${e}`);
+                    }
                   }
-                  
-                  // Verificar se a data é válida
-                  if (!isNaN(dataHora.getTime())) {
-                    horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                  } else {
-                    console.log(`Data inválida na linha ${i+1}:`, dataHoraValue);
-                    continue;
+                } else if (typeof dataHoraValue === 'number') {
+                  // Excel guarda datas como números
+                  try {
+                    const dt = new Date(Math.round((dataHoraValue - 25569) * 86400 * 1000));
+                    if (!isNaN(dt.getTime())) {
+                      horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                  } catch (e) {
+                    console.log(`Erro ao processar número como data: ${e}`);
                   }
-                } else if (typeof dataHoraValue === 'string') {
-                  // Se não é uma data válida mas é uma string, vamos tentar extrair a hora
-                  // Assumindo que pode ser apenas um horário como "04:05"
-                  const timeMatch = dataHoraValue.match(/(\d{1,2}:\d{2})/);
-                  if (timeMatch) {
-                    horaFormatada = timeMatch[1];
-                  } else {
-                    console.log(`Não foi possível extrair a hora da linha ${i+1}:`, dataHoraValue);
-                    continue;
-                  }
-                } else {
-                  console.log(`Formato de hora não reconhecido na linha ${i+1}:`, dataHoraValue);
+                } else if (dataHoraValue instanceof Date) {
+                  horaFormatada = dataHoraValue.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+                
+                if (!horaFormatada) {
+                  console.log(`Não foi possível extrair hora da linha ${i+1}`);
                   continue;
                 }
                 
@@ -496,8 +436,8 @@ export default function SistemaCargas() {
                 const preBox = viagensData[viagem]?.preBox || '';
                 const boxD = viagensData[viagem]?.boxD || '';
                 
-                const novaCarga: Carga = {
-                  id: (cargas.length + todasCargas.length + 1).toString(),
+                const novaCarga: CargaItem = {
+                  id: (store.cargas.length + todasCargas.length + 1).toString(),
                   hora: horaFormatada,
                   viagem: viagem,
                   frota: frota,
@@ -517,13 +457,11 @@ export default function SistemaCargas() {
             }
           }
           
-          // Ordenar as cargas por data/hora
+          // Ordenar as cargas por hora
           todasCargas.sort((a, b) => a.hora.localeCompare(b.hora));
           
-          // Atualizar o estado com os novos dados
-          const novaListaCargas = [...cargas, ...todasCargas];
-          setCargas(novaListaCargas);
-          atualizarEstatisticas(novaListaCargas);
+          // Adicionar as cargas processadas ao store
+          store.addCargas(todasCargas);
           
           alert(`Processamento concluído! ${todasCargas.length} registros importados de ${files.length} arquivos.`);
         } catch (error) {
@@ -540,12 +478,18 @@ export default function SistemaCargas() {
     }
   };
 
-  // Removar uma carga
-  const removerCarga = (id: string) => {
-    const novaLista = cargas.filter(carga => carga.id !== id);
-    setCargas(novaLista);
-    atualizarEstatisticas(novaLista);
-  };
+  // Filtrar as cargas com base na busca
+  const cargasFiltradas = filtro ? store.filterCargas(filtro) : cargas;
+
+  // Ordenar as cargas
+  const cargasOrdenadas = [...cargasFiltradas].sort((a, b) => {
+    if (ordenacao === "hora") return a.hora.localeCompare(b.hora);
+    if (ordenacao === "viagem") return a.viagem.localeCompare(b.viagem);
+    if (ordenacao === "frota") return a.frota.localeCompare(b.frota);
+    if (ordenacao === "preBox") return a.preBox.localeCompare(b.preBox);
+    if (ordenacao === "boxD") return a.boxD.localeCompare(b.boxD);
+    return a.status.localeCompare(b.status);
+  });
 
   return (
     <div className="space-y-6">
@@ -758,8 +702,8 @@ export default function SistemaCargas() {
             </Select>
             
             <Select
-              value="hora"
-              onValueChange={(valor: "hora" | "viagem" | "frota" | "preBox" | "boxD" | "status") => setOrdenacao(valor)}
+              value={ordenacao}
+              onValueChange={(valor: any) => setOrdenacao(valor)}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Ordenar por" />
@@ -811,12 +755,7 @@ export default function SistemaCargas() {
                       type="text"
                       className="w-full p-1 border border-gray-200 rounded-md text-sm"
                       value={carga.hora}
-                      onChange={(e) => {
-                        const novasCargas = cargas.map(c => 
-                          c.id === carga.id ? { ...c, hora: e.target.value } : c
-                        );
-                        setCargas(novasCargas);
-                      }}
+                      onChange={(e) => store.updateCarga(carga.id, { hora: e.target.value })}
                     />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -824,12 +763,7 @@ export default function SistemaCargas() {
                       type="text"
                       className="w-full p-1 border border-gray-200 rounded-md text-sm"
                       value={carga.viagem}
-                      onChange={(e) => {
-                        const novasCargas = cargas.map(c => 
-                          c.id === carga.id ? { ...c, viagem: e.target.value } : c
-                        );
-                        setCargas(novasCargas);
-                      }}
+                      onChange={(e) => store.updateCarga(carga.id, { viagem: e.target.value })}
                     />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -837,12 +771,7 @@ export default function SistemaCargas() {
                       type="text"
                       className="w-full p-1 border border-gray-200 rounded-md text-sm"
                       value={carga.frota}
-                      onChange={(e) => {
-                        const novasCargas = cargas.map(c => 
-                          c.id === carga.id ? { ...c, frota: e.target.value } : c
-                        );
-                        setCargas(novasCargas);
-                      }}
+                      onChange={(e) => store.updateCarga(carga.id, { frota: e.target.value })}
                     />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -850,12 +779,7 @@ export default function SistemaCargas() {
                       type="text"
                       className="w-full p-1 border border-gray-200 rounded-md text-sm"
                       value={carga.preBox}
-                      onChange={(e) => {
-                        const novasCargas = cargas.map(c => 
-                          c.id === carga.id ? { ...c, preBox: e.target.value } : c
-                        );
-                        setCargas(novasCargas);
-                      }}
+                      onChange={(e) => store.updateCarga(carga.id, { preBox: e.target.value })}
                     />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -863,12 +787,7 @@ export default function SistemaCargas() {
                       type="text"
                       className="w-full p-1 border border-gray-200 rounded-md text-sm"
                       value={carga.boxD}
-                      onChange={(e) => {
-                        const novasCargas = cargas.map(c => 
-                          c.id === carga.id ? { ...c, boxD: e.target.value } : c
-                        );
-                        setCargas(novasCargas);
-                      }}
+                      onChange={(e) => store.updateCarga(carga.id, { boxD: e.target.value })}
                     />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
@@ -898,7 +817,7 @@ export default function SistemaCargas() {
                           const novoStatus = carga.status === "LIVRE" ? "OCUPADO" : 
                                             carga.status === "OCUPADO" ? "EM_CARREGAMENTO" : 
                                             carga.status === "EM_CARREGAMENTO" ? "COMPLETO" : "LIVRE";
-                          mudarStatus(carga.id, novoStatus);
+                          mudarStatus(carga.id, novoStatus as CargaItem["status"]);
                         }}
                       >
                         <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
