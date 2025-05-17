@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 interface HeaderProps {
-  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas";
-  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas") => void;
+  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas";
+  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas") => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
@@ -54,6 +54,12 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
               className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
             >
               Sistema de Cargas
+            </button>
+            <button 
+              onClick={() => setActiveSection("estatisticas")}
+              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+            >
+              Estatísticas
             </button>
           </div>
         </nav>
