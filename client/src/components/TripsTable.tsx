@@ -682,13 +682,13 @@ const TripsTable: React.FC = () => {
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "9%" }}>
                         Quantidade
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "6%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
                         Turno
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "6%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "8%" }}>
                         Região
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "12%" }}>
                         Status
                       </th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
@@ -803,9 +803,9 @@ const TripsTable: React.FC = () => {
                           
                           {/* Turno */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="relative">
+                            <div className="relative" style={{ maxWidth: '80px', margin: '0 auto' }}>
                               <select 
-                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                className="appearance-none block w-full py-1 px-3 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black font-medium"
                                 value={trip.shift}
                                 onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
                               >
@@ -816,7 +816,7 @@ const TripsTable: React.FC = () => {
                                 <option value="5" className="text-black">5</option>
                                 <option value="6" className="text-black">6</option>
                               </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-700">
                                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                 </svg>
@@ -826,9 +826,9 @@ const TripsTable: React.FC = () => {
                           
                           {/* Região */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="relative">
+                            <div className="relative" style={{ maxWidth: '80px', margin: '0 auto' }}>
                               <select 
-                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                className="appearance-none block w-full py-1 px-3 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black font-medium"
                                 value={trip.region}
                                 onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
                               >
@@ -842,7 +842,7 @@ const TripsTable: React.FC = () => {
                                 <option value="SB" className="text-black">SB</option>
                                 <option value="EXP" className="text-black">EXP</option>
                               </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-700">
                                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                 </svg>
@@ -852,9 +852,9 @@ const TripsTable: React.FC = () => {
                           
                           {/* Status */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="relative">
+                            <div className="relative" style={{ maxWidth: '150px', margin: '0 auto' }}>
                               <select 
-                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                className="appearance-none block w-full py-1 px-3 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black font-medium"
                                 value={trip.status}
                                 onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
                               >
@@ -865,7 +865,7 @@ const TripsTable: React.FC = () => {
                                 <option value="3° Completa" className="text-black">3° Completa</option>
                                 <option value="3° Incompleta" className="text-black">3° Incompleta</option>
                               </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-700">
                                 <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                                 </svg>
