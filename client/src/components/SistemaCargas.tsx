@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useTrip } from "../contexts/TripContext";
 import useSistemaCargasStore, { CargaItem } from "../hooks/useSistemaCargasStore";
+import ConflictDetector from "./ConflictDetector";
 
 export default function SistemaCargas() {
   const { trips } = useTrip();
@@ -521,20 +522,26 @@ export default function SistemaCargas() {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 bg-white shadow-lg rounded-xl overflow-hidden">
-        <div className="flex items-center space-x-4 mb-6">
-          <div className="bg-indigo-100 p-3 rounded-full">
-            <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="p-6 bg-white shadow-lg rounded-xl overflow-hidden lg:col-span-2">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="bg-indigo-100 p-3 rounded-full">
+              <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Bem-vindo, Operador!</h2>
+              <p className="text-gray-600">Sistema de Gerenciamento de Cegonheiras</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Bem-vindo, Operador!</h2>
-            <p className="text-gray-600">Sistema de Gerenciamento de Cegonheiras</p>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-6">Gerencie suas cargas, acompanhe status e mantenha sua frota organizada em um só lugar.</p>
-      </Card>
+          <p className="text-gray-600 mb-6">Gerencie suas cargas, acompanhe status e mantenha sua frota organizada em um só lugar.</p>
+        </Card>
+        
+        <Card className="p-6 bg-white shadow-lg rounded-xl overflow-hidden">
+          <ConflictDetector />
+        </Card>
+      </div>
 
       <div className="flex justify-between items-center">
         <div className="flex space-x-4">

@@ -20,7 +20,6 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <ThemeToggle />
           
           <nav className="hidden md:block">
             <div className="flex space-x-4">
