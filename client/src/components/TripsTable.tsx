@@ -317,8 +317,6 @@ const TripsTable: React.FC = () => {
                             <option value="AP">AP</option>
                             <option value="SB">SB</option>
                             <option value="EXP">EXP</option>
-                            <option value="Leste">Leste</option>
-                            <option value="Oeste">Oeste</option>
                           </select>
                         </div>
                         <div>
@@ -331,8 +329,12 @@ const TripsTable: React.FC = () => {
                             value={tripData.status}
                             onChange={(e) => setTripData({...tripData, status: e.target.value})}
                           >
-                            <option value="Completa">Completa</option>
-                            <option value="Incompleta">Incompleta</option>
+                            <option value="1° Completa">1° Completa</option>
+                            <option value="1° Incompleta">1° Incompleta</option>
+                            <option value="2° Completa">2° Completa</option>
+                            <option value="2° Incompleta">2° Incompleta</option>
+                            <option value="3° Completa">3° Completa</option>
+                            <option value="3° Incompleta">3° Incompleta</option>
                           </select>
                         </div>
                       </div>
@@ -532,8 +534,6 @@ const TripsTable: React.FC = () => {
                               <option value="AP">AP</option>
                               <option value="SB">SB</option>
                               <option value="EXP">EXP</option>
-                              <option value="Leste">Leste</option>
-                              <option value="Oeste">Oeste</option>
                             </select>
                           </td>
                           
@@ -544,8 +544,12 @@ const TripsTable: React.FC = () => {
                               value={trip.status}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
                             >
-                              <option value="Completa">Completa</option>
-                              <option value="Incompleta">Incompleta</option>
+                              <option value="1° Completa">1° Completa</option>
+                              <option value="1° Incompleta">1° Incompleta</option>
+                              <option value="2° Completa">2° Completa</option>
+                              <option value="2° Incompleta">2° Incompleta</option>
+                              <option value="3° Completa">3° Completa</option>
+                              <option value="3° Incompleta">3° Incompleta</option>
                             </select>
                           </td>
                           
