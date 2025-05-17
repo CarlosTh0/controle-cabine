@@ -18,69 +18,73 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
           </svg>
           <h1 className="text-xl font-bold text-white">Sistema de Gerenciamento de Viagens</h1>
         </div>
-        <div className="flex items-center">
+        
+        <div className="flex items-center space-x-4">
           <ThemeToggle />
-        <nav className="hidden md:block">
-          <div className="flex space-x-4">
+          
+          <nav className="hidden md:block">
+            <div className="flex space-x-4">
+              <button 
+                onClick={() => setActiveSection("dashboard")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "dashboard" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={() => setActiveSection("preBoxes")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "preBoxes" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Gerenciar PRE-BOX
+              </button>
+              <button 
+                onClick={() => setActiveSection("trips")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "trips" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Viagens
+              </button>
+              <button 
+                onClick={() => setActiveSection("painelCargas")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Painel de Cargas
+              </button>
+              <button 
+                onClick={() => setActiveSection("resumo")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Resumo
+              </button>
+              <button 
+                onClick={() => setActiveSection("sistemaCargas")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Sistema de Cargas
+              </button>
+              <button 
+                onClick={() => setActiveSection("estatisticas")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Estatísticas
+              </button>
+              <button 
+                onClick={() => setActiveSection("usuarios")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "usuarios" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              >
+                Usuários
+              </button>
+            </div>
+          </nav>
+          
+          <div className="md:hidden">
             <button 
-              onClick={() => setActiveSection("dashboard")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "dashboard" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+              className="text-white hover:text-blue-200 focus:outline-none"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              Dashboard
-            </button>
-            <button 
-              onClick={() => setActiveSection("preBoxes")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "preBoxes" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Gerenciar PRE-BOX
-            </button>
-            <button 
-              onClick={() => setActiveSection("trips")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "trips" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Viagens
-            </button>
-            <button 
-              onClick={() => setActiveSection("painelCargas")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Painel de Cargas
-            </button>
-            <button 
-              onClick={() => setActiveSection("resumo")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Resumo
-            </button>
-            <button 
-              onClick={() => setActiveSection("sistemaCargas")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Sistema de Cargas
-            </button>
-            <button 
-              onClick={() => setActiveSection("estatisticas")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Estatísticas
-            </button>
-            <button 
-              onClick={() => setActiveSection("usuarios")}
-              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "usuarios" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-            >
-              Usuários
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
           </div>
-        </nav>
-        <div className="md:hidden">
-          <button 
-            className="text-white hover:text-blue-200 focus:outline-none"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
         </div>
       </div>
 
