@@ -301,7 +301,7 @@ const TripsTable: React.FC = () => {
                       <div className="grid grid-cols-2 gap-4 mt-4">
                         <div>
                           <label htmlFor="turno" className="block text-sm font-medium text-gray-700">
-                            Turno
+                            Código de Turno
                           </label>
                           <select
                             id="turno"
@@ -309,9 +309,12 @@ const TripsTable: React.FC = () => {
                             value={tripData.shift}
                             onChange={(e) => setTripData({...tripData, shift: e.target.value})}
                           >
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
+                            <option value="1">1 - 1º TURNO (BOX-D sem PRE-BOX)</option>
+                            <option value="2">2 - 1º TURNO (via PRE-BOX)</option>
+                            <option value="3">3 - 2º TURNO (BOX-D sem PRE-BOX)</option>
+                            <option value="4">4 - 2º TURNO (via PRE-BOX)</option>
+                            <option value="5">5 - 3º TURNO (BOX-D sem PRE-BOX)</option>
+                            <option value="6">6 - 3º TURNO (via PRE-BOX)</option>
                           </select>
                         </div>
                         <div>

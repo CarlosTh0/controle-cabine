@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCargas } from "../contexts/CargasContext";
+import { useViagens } from "../contexts/ViagensContext";
 
 interface ResumoCargas {
   descricao: string;
@@ -10,6 +11,7 @@ interface ResumoCargas {
 
 export default function Resumo() {
   const { totalFormadasNoDia, faltamFormar, totalTurnos } = useCargas();
+  const { viagensCategorizadas, totalVeiculos, totalCargas } = useViagens();
   
   const [dataAtual, setDataAtual] = useState(() => {
     const hoje = new Date();
@@ -24,31 +26,31 @@ export default function Resumo() {
       descricao: "CARGAS FORMADAS PELO 1º TURNO DIA SEGUINTE",
       qtdCargas: 0,
       qtdVeiculos: 0,
-      total: 707
+      total: 0
     },
     {
       descricao: "CARGAS FORMADAS PELO 1º TURNO FECHAMENTO",
-      qtdCargas: 66,
-      qtdVeiculos: 707,
-      total: 707
+      qtdCargas: 0,
+      qtdVeiculos: 0,
+      total: 0
     },
     {
       descricao: "CARGAS FORMADAS PELO 2º TURNO DIA SEGUINTE",
-      qtdCargas: 36,
-      qtdVeiculos: 388,
-      total: 1101
+      qtdCargas: 0,
+      qtdVeiculos: 0,
+      total: 0
     },
     {
       descricao: "CARGAS FORMADAS PELO 2º TURNO FECHAMENTO",
-      qtdCargas: 65,
-      qtdVeiculos: 713,
-      total: 713
+      qtdCargas: 0,
+      qtdVeiculos: 0,
+      total: 0
     },
     {
       descricao: "CARGAS FORMADAS PELO 3º TURNO DIA SEGUINTE",
-      qtdCargas: 13,
-      qtdVeiculos: 141,
-      total: 141
+      qtdCargas: 0,
+      qtdVeiculos: 0,
+      total: 0
     },
     {
       descricao: "CARGAS FORMADAS PELO 3º TURNO FECHAMENTO",
@@ -57,6 +59,38 @@ export default function Resumo() {
       total: 0
     }
   ]);
+
+  // Atualizar dados quando as viagens mudarem
+  useEffect(() => {
+    const newCargasData = [...cargasData];
+    
+    // Atualizar os dados com base nas viagens categorizadas
+    newCargasData[0].qtdCargas = viagensCategorizadas.turno1Dia;
+    newCargasData[0].qtdVeiculos = viagensCategorizadas.turno1Dia;
+    newCargasData[0].total = viagensCategorizadas.turno1Dia;
+    
+    newCargasData[1].qtdCargas = viagensCategorizadas.turno1Fechamento;
+    newCargasData[1].qtdVeiculos = viagensCategorizadas.turno1Fechamento;
+    newCargasData[1].total = viagensCategorizadas.turno1Fechamento;
+    
+    newCargasData[2].qtdCargas = viagensCategorizadas.turno2Dia;
+    newCargasData[2].qtdVeiculos = viagensCategorizadas.turno2Dia;
+    newCargasData[2].total = viagensCategorizadas.turno2Dia;
+    
+    newCargasData[3].qtdCargas = viagensCategorizadas.turno2Fechamento;
+    newCargasData[3].qtdVeiculos = viagensCategorizadas.turno2Fechamento;
+    newCargasData[3].total = viagensCategorizadas.turno2Fechamento;
+    
+    newCargasData[4].qtdCargas = viagensCategorizadas.turno3Dia;
+    newCargasData[4].qtdVeiculos = viagensCategorizadas.turno3Dia;
+    newCargasData[4].total = viagensCategorizadas.turno3Dia;
+    
+    newCargasData[5].qtdCargas = viagensCategorizadas.turno3Fechamento;
+    newCargasData[5].qtdVeiculos = viagensCategorizadas.turno3Fechamento;
+    newCargasData[5].total = viagensCategorizadas.turno3Fechamento;
+    
+    setCargasData(newCargasData);
+  }, [viagensCategorizadas]);
 
   // Calcular totais
   const totalQtdCargas = cargasData.reduce((sum, item) => sum + item.qtdCargas, 0);

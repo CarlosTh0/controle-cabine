@@ -13,6 +13,7 @@ import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
 import { TripProvider, useTrip } from "./contexts/TripContext";
 import { CargasProvider } from "./contexts/CargasContext";
+import { ViagensProvider } from "./contexts/ViagensContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
@@ -71,8 +72,10 @@ function App() {
       <TooltipProvider>
         <TripProvider>
           <CargasProvider>
-            <MainApp />
-            <Toaster />
+            <ViagensProvider>
+              <MainApp />
+              <Toaster />
+            </ViagensProvider>
           </CargasProvider>
         </TripProvider>
       </TooltipProvider>
