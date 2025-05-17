@@ -4,7 +4,6 @@ import {
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTrip } from "../contexts/TripContext";
 import { useSistemaCargasStore } from "../hooks/useSistemaCargasStore";
 
@@ -138,29 +137,26 @@ export default function EstatisticasAvancadas() {
         <h2 className="text-2xl font-bold">Estatísticas Avançadas</h2>
         
         <div className="flex space-x-2">
-          <TabsList>
-            <TabsTrigger 
-              value="hoje" 
-              className={periodo === "hoje" ? "bg-blue-100" : ""}
+          <div className="flex space-x-1 rounded-md bg-muted p-1">
+            <button 
+              className={`px-3 py-1.5 text-sm rounded-md ${periodo === "hoje" ? "bg-white shadow-sm" : "hover:bg-gray-100"}`}
               onClick={() => setPeriodo("hoje")}
             >
               Hoje
-            </TabsTrigger>
-            <TabsTrigger 
-              value="semana" 
-              className={periodo === "semana" ? "bg-blue-100" : ""}
+            </button>
+            <button 
+              className={`px-3 py-1.5 text-sm rounded-md ${periodo === "semana" ? "bg-white shadow-sm" : "hover:bg-gray-100"}`}
               onClick={() => setPeriodo("semana")}
             >
               Semana
-            </TabsTrigger>
-            <TabsTrigger 
-              value="mes" 
-              className={periodo === "mes" ? "bg-blue-100" : ""}
+            </button>
+            <button 
+              className={`px-3 py-1.5 text-sm rounded-md ${periodo === "mes" ? "bg-white shadow-sm" : "hover:bg-gray-100"}`}
               onClick={() => setPeriodo("mes")}
             >
               Mês
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
         </div>
       </div>
       
