@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 interface HeaderProps {
-  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas";
-  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas") => void;
+  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios";
+  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios") => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
@@ -60,6 +60,12 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
               className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
             >
               Estatísticas
+            </button>
+            <button 
+              onClick={() => setActiveSection("usuarios")}
+              className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "usuarios" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+            >
+              Usuários
             </button>
           </div>
         </nav>
@@ -138,9 +144,18 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
                 setActiveSection("estatisticas");
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
             >
               Estatísticas
+            </button>
+            <button 
+              onClick={() => {
+                setActiveSection("usuarios");
+                setMobileMenuOpen(false);
+              }}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium ${activeSection === "usuarios" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+            >
+              Usuários
             </button>
           </div>
         </div>
