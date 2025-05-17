@@ -6,92 +6,100 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useTrip } from "../contexts/TripContext";
 
-// Interface para a carga/viagem
-interface Carga {
-  id: string;
-  hora: string;
-  viagem: string;
-  frota: string;
-  preBox: string;
-  boxD: string;
-  status: "LIVRE" | "OCUPADO" | "EM_CARREGAMENTO" | "COMPLETO";
-}
+import SistemaCargasService, { CargaItem } from "../services/SistemaCargasService";
 
 export default function SistemaCargas() {
   const { trips } = useTrip();
-  const [cargas, setCargas] = useState<Carga[]>([]);
+  const servicoCargas = SistemaCargasService.getInstance();
+  
+  // Estados locais para o componente
+  const [cargas, setCargas] = useState<CargaItem[]>(servicoCargas.cargas);
   const [filtro, setFiltro] = useState("");
   const [selecionarArquivo, setSelecionarArquivo] = useState(false);
   const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
   const [ordenacao, setOrdenacao] = useState<"hora" | "viagem" | "frota" | "preBox" | "boxD" | "status">("hora");
   
   // Estatísticas
-  const [totalViagens, setTotalViagens] = useState(0);
-  const [totalDisponiveis, setTotalDisponiveis] = useState(0);
-  const [totalEmCarregamento, setTotalEmCarregamento] = useState(0);
-  const [totalCompletadas, setTotalCompletadas] = useState(0);
+  const [totalViagens, setTotalViagens] = useState(servicoCargas.totalViagens);
+  const [totalDisponiveis, setTotalDisponiveis] = useState(servicoCargas.totalDisponiveis);
+  const [totalEmCarregamento, setTotalEmCarregamento] = useState(servicoCargas.totalEmCarregamento);
+  const [totalCompletadas, setTotalCompletadas] = useState(servicoCargas.totalCompletadas);
 
-  // Inicializar com alguns dados para demonstração
+  // Inicializar e subscrever a mudanças
   useEffect(() => {
-    const cargasIniciais: Carga[] = [
-      {
-        id: "1",
-        hora: "04:05",
-        viagem: "V001",
-        frota: "F123",
-        preBox: "300-356 ou 50-56",
-        boxD: "1-32",
-        status: "LIVRE"
-      },
-      {
-        id: "2",
-        hora: "04:05",
-        viagem: "V001",
-        frota: "F123",
-        preBox: "300-356 ou 50-56",
-        boxD: "1-32",
-        status: "LIVRE"
-      },
-      {
-        id: "3",
-        hora: "04:05",
-        viagem: "V001",
-        frota: "F123",
-        preBox: "300-356 ou 50-56",
-        boxD: "1-32",
-        status: "LIVRE"
-      },
-      {
-        id: "4",
-        hora: "04:05",
-        viagem: "V001",
-        frota: "F123",
-        preBox: "300-356 ou 50-56",
-        boxD: "1-32",
-        status: "LIVRE"
-      },
-      {
-        id: "5",
-        hora: "04:05",
-        viagem: "V001",
-        frota: "F123",
-        preBox: "300-356 ou 50-56",
-        boxD: "1-32",
-        status: "LIVRE"
-      }
-    ];
+    // Se não tiver dados, adicionar alguns dados iniciais para demonstração
+    if (servicoCargas.cargas.length === 0) {
+      const cargasIniciais: CargaItem[] = [
+        {
+          id: "1",
+          hora: "04:05",
+          viagem: "V001",
+          frota: "F123",
+          preBox: "300-356 ou 50-56",
+          boxD: "1-32",
+          status: "LIVRE"
+        },
+        {
+          id: "2",
+          hora: "04:05",
+          viagem: "V001",
+          frota: "F123",
+          preBox: "300-356 ou 50-56",
+          boxD: "1-32",
+          status: "LIVRE"
+        },
+        {
+          id: "3",
+          hora: "04:05",
+          viagem: "V001",
+          frota: "F123",
+          preBox: "300-356 ou 50-56",
+          boxD: "1-32",
+          status: "LIVRE"
+        },
+        {
+          id: "4",
+          hora: "04:05",
+          viagem: "V001",
+          frota: "F123",
+          preBox: "300-356 ou 50-56",
+          boxD: "1-32",
+          status: "LIVRE"
+        },
+        {
+          id: "5",
+          hora: "04:05",
+          viagem: "V001",
+          frota: "F123",
+          preBox: "300-356 ou 50-56",
+          boxD: "1-32",
+          status: "LIVRE"
+        }
+      ];
+      
+      servicoCargas.addCargas(cargasIniciais);
+    }
     
-    setCargas(cargasIniciais);
-    atualizarEstatisticas(cargasIniciais);
+    // Função para atualizar os estados locais quando o serviço mudar
+    const atualizarEstadosLocais = () => {
+      setCargas(servicoCargas.cargas);
+      setTotalViagens(servicoCargas.totalViagens);
+      setTotalDisponiveis(servicoCargas.totalDisponiveis);
+      setTotalEmCarregamento(servicoCargas.totalEmCarregamento);
+      setTotalCompletadas(servicoCargas.totalCompletadas);
+    };
+    
+    // Subscrever a mudanças no serviço
+    const unsubscribe = servicoCargas.subscribe(atualizarEstadosLocais);
+    
+    // Carregar estado inicial
+    atualizarEstadosLocais();
+    
+    // Limpar subscrição quando o componente for desmontado
+    return () => {
+      unsubscribe();
+    };
   }, []);
-
-  // Atualizar as estatísticas
-  const atualizarEstatisticas = (listaCargas: Carga[]) => {
-    setTotalViagens(listaCargas.length);
-    setTotalDisponiveis(listaCargas.filter(c => c.status === "LIVRE").length);
-    setTotalEmCarregamento(listaCargas.filter(c => c.status === "EM_CARREGAMENTO").length);
-    setTotalCompletadas(listaCargas.filter(c => c.status === "COMPLETO").length);
-  };
 
   // Adicionar nova carga
   const adicionarCarga = () => {
