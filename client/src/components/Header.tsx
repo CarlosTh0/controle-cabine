@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
   activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios";
@@ -17,6 +18,8 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
           </svg>
           <h1 className="text-xl font-bold text-white">Sistema de Gerenciamento de Viagens</h1>
         </div>
+        <div className="flex items-center">
+          <ThemeToggle />
         <nav className="hidden md:block">
           <div className="flex space-x-4">
             <button 

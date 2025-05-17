@@ -1,0 +1,139 @@
+/* Variáveis de cor para tema claro */
+.light-theme {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  
+  --primary: #1e40af;
+  --primary-foreground: #f8fafc;
+  
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #1e40af;
+  
+  --radius: 0.5rem;
+  
+  /* Cores específicas da aplicação */
+  --header-bg: #1e40af;
+  --header-text: #f8fafc;
+  --footer-bg: #ffffff;
+  --footer-text: #64748b;
+  --table-header-bg: #f1f5f9;
+  --table-row-hover: #f8fafc;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #0ea5e9;
+  --error: #ef4444;
+}
+
+/* Variáveis de cor para tema escuro */
+.dark-theme {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  
+  --primary: #3b82f6;
+  --primary-foreground: #0f172a;
+  
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  
+  --muted: #293548;
+  --muted-foreground: #94a3b8;
+  
+  --accent: #2d3748;
+  --accent-foreground: #f8fafc;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+  
+  --radius: 0.5rem;
+  
+  /* Cores específicas da aplicação */
+  --header-bg: #1e293b;
+  --header-text: #f8fafc;
+  --footer-bg: #1e293b;
+  --footer-text: #94a3b8;
+  --table-header-bg: #1e293b;
+  --table-row-hover: #293548;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --info: #0ea5e9;
+  --error: #ef4444;
+}
+
+/* Aplicar cores nas classes */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+header {
+  background-color: var(--header-bg) !important;
+  color: var(--header-text) !important;
+}
+
+footer {
+  background-color: var(--footer-bg) !important;
+  color: var(--footer-text) !important;
+}
+
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-color: var(--border);
+}
+
+.table-header {
+  background-color: var(--table-header-bg);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+/* Ajustes para input e formulários no tema escuro */
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+  background-color: var(--input);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Transições suaves para mudança de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
