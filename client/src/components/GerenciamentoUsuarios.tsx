@@ -26,6 +26,7 @@ interface User {
   id: string;
   username: string;
   email: string;
+  password: string;
   permissionLevel: PermissionLevel;
   active: boolean;
   lastLogin?: string;
@@ -37,6 +38,7 @@ const INITIAL_USERS: User[] = [
     id: "1",
     username: "admin",
     email: "admin@example.com",
+    password: "admin123",
     permissionLevel: "admin",
     active: true,
     lastLogin: "17/05/2025 08:15"
@@ -45,6 +47,7 @@ const INITIAL_USERS: User[] = [
     id: "2",
     username: "operador1",
     email: "operador1@example.com",
+    password: "operador123",
     permissionLevel: "editor",
     active: true,
     lastLogin: "17/05/2025 07:30"
@@ -53,6 +56,7 @@ const INITIAL_USERS: User[] = [
     id: "3",
     username: "visitante",
     email: "visitante@example.com",
+    password: "visitante123",
     permissionLevel: "viewer",
     active: true,
     lastLogin: "16/05/2025 14:45"
@@ -70,6 +74,7 @@ const GerenciamentoUsuarios: React.FC = () => {
   const [newUser, setNewUser] = useState<Omit<User, "id" | "lastLogin">>({
     username: "",
     email: "",
+    password: "",
     permissionLevel: "viewer",
     active: true
   });
@@ -103,6 +108,7 @@ const GerenciamentoUsuarios: React.FC = () => {
     setNewUser({
       username: "",
       email: "",
+      password: "",
       permissionLevel: "viewer",
       active: true
     });
@@ -350,6 +356,20 @@ const GerenciamentoUsuarios: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="password" className="text-right font-medium">
+                Senha
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Digite a senha"
+                className="col-span-3"
+                value={newUser.password}
+                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="permissionLevel" className="text-right font-medium">
                 Permissão
               </label>
@@ -432,6 +452,20 @@ const GerenciamentoUsuarios: React.FC = () => {
                   className="col-span-3"
                   value={currentUser.email}
                   onChange={(e) => setCurrentUser({...currentUser, email: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-password" className="text-right font-medium">
+                  Senha
+                </label>
+                <Input
+                  id="edit-password"
+                  type="password"
+                  placeholder="Digite a nova senha"
+                  className="col-span-3"
+                  value={currentUser.password}
+                  onChange={(e) => setCurrentUser({...currentUser, password: e.target.value})}
                 />
               </div>
               
