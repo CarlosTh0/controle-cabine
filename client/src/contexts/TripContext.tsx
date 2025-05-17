@@ -234,6 +234,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const handleDeletePreBox = (id: string) => {
     setPreBoxes(preBoxes.filter(preBox => preBox.id !== id));
     setShowModal(false); // Fechar o modal após a exclusão
+    setModalContent(null); // Importante: também precisa limpar o conteúdo do modal
   };
 
   // Link trip to PRE-BOX
@@ -274,6 +275,7 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     
     // Close modal
     setShowModal(false);
+    setModalContent(null);
   };
 
   // Create trip with custom data
