@@ -587,51 +587,51 @@ const TripsTable: React.FC = () => {
                           {/* Turno */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
                               value={trip.shift}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
                             >
-                              <option value="1">1</option>
-                              <option value="2">2</option>
-                              <option value="3">3</option>
-                              <option value="4">4</option>
-                              <option value="5">5</option>
-                              <option value="6">6</option>
+                              <option value="1" className="text-gray-900">1</option>
+                              <option value="2" className="text-gray-900">2</option>
+                              <option value="3" className="text-gray-900">3</option>
+                              <option value="4" className="text-gray-900">4</option>
+                              <option value="5" className="text-gray-900">5</option>
+                              <option value="6" className="text-gray-900">6</option>
                             </select>
                           </td>
                           
                           {/* Região */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
                               value={trip.region}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
                             >
-                              <option value="P">P</option>
-                              <option value="T">T</option>
-                              <option value="L">L</option>
-                              <option value="S">S</option>
-                              <option value="N">N</option>
-                              <option value="IM">IM</option>
-                              <option value="AP">AP</option>
-                              <option value="SB">SB</option>
-                              <option value="EXP">EXP</option>
+                              <option value="P" className="text-gray-900">P</option>
+                              <option value="T" className="text-gray-900">T</option>
+                              <option value="L" className="text-gray-900">L</option>
+                              <option value="S" className="text-gray-900">S</option>
+                              <option value="N" className="text-gray-900">N</option>
+                              <option value="IM" className="text-gray-900">IM</option>
+                              <option value="AP" className="text-gray-900">AP</option>
+                              <option value="SB" className="text-gray-900">SB</option>
+                              <option value="EXP" className="text-gray-900">EXP</option>
                             </select>
                           </td>
                           
                           {/* Status */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-transparent"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
                               value={trip.status}
                               onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
                             >
-                              <option value="1° Completa">1° Completa</option>
-                              <option value="1° Incompleta">1° Incompleta</option>
-                              <option value="2° Completa">2° Completa</option>
-                              <option value="2° Incompleta">2° Incompleta</option>
-                              <option value="3° Completa">3° Completa</option>
-                              <option value="3° Incompleta">3° Incompleta</option>
+                              <option value="1° Completa" className="text-gray-900">1° Completa</option>
+                              <option value="1° Incompleta" className="text-gray-900">1° Incompleta</option>
+                              <option value="2° Completa" className="text-gray-900">2° Completa</option>
+                              <option value="2° Incompleta" className="text-gray-900">2° Incompleta</option>
+                              <option value="3° Completa" className="text-gray-900">3° Completa</option>
+                              <option value="3° Incompleta" className="text-gray-900">3° Incompleta</option>
                             </select>
                           </td>
                           
