@@ -586,53 +586,74 @@ const TripsTable: React.FC = () => {
                           
                           {/* Turno */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
-                              value={trip.shift}
-                              onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
-                            >
-                              <option value="1" className="text-gray-900">1</option>
-                              <option value="2" className="text-gray-900">2</option>
-                              <option value="3" className="text-gray-900">3</option>
-                              <option value="4" className="text-gray-900">4</option>
-                              <option value="5" className="text-gray-900">5</option>
-                              <option value="6" className="text-gray-900">6</option>
-                            </select>
+                            <div className="relative">
+                              <select 
+                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                value={trip.shift}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'shift')}
+                              >
+                                <option value="1" className="text-black">1</option>
+                                <option value="2" className="text-black">2</option>
+                                <option value="3" className="text-black">3</option>
+                                <option value="4" className="text-black">4</option>
+                                <option value="5" className="text-black">5</option>
+                                <option value="6" className="text-black">6</option>
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            </div>
                           </td>
                           
                           {/* Região */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
-                              value={trip.region}
-                              onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
-                            >
-                              <option value="P" className="text-gray-900">P</option>
-                              <option value="T" className="text-gray-900">T</option>
-                              <option value="L" className="text-gray-900">L</option>
-                              <option value="S" className="text-gray-900">S</option>
-                              <option value="N" className="text-gray-900">N</option>
-                              <option value="IM" className="text-gray-900">IM</option>
-                              <option value="AP" className="text-gray-900">AP</option>
-                              <option value="SB" className="text-gray-900">SB</option>
-                              <option value="EXP" className="text-gray-900">EXP</option>
-                            </select>
+                            <div className="relative">
+                              <select 
+                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                value={trip.region}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'region')}
+                              >
+                                <option value="P" className="text-black">P</option>
+                                <option value="T" className="text-black">T</option>
+                                <option value="L" className="text-black">L</option>
+                                <option value="S" className="text-black">S</option>
+                                <option value="N" className="text-black">N</option>
+                                <option value="IM" className="text-black">IM</option>
+                                <option value="AP" className="text-black">AP</option>
+                                <option value="SB" className="text-black">SB</option>
+                                <option value="EXP" className="text-black">EXP</option>
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            </div>
                           </td>
                           
                           {/* Status */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <select 
-                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm bg-white text-gray-900"
-                              value={trip.status}
-                              onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
-                            >
-                              <option value="1° Completa" className="text-gray-900">1° Completa</option>
-                              <option value="1° Incompleta" className="text-gray-900">1° Incompleta</option>
-                              <option value="2° Completa" className="text-gray-900">2° Completa</option>
-                              <option value="2° Incompleta" className="text-gray-900">2° Incompleta</option>
-                              <option value="3° Completa" className="text-gray-900">3° Completa</option>
-                              <option value="3° Incompleta" className="text-gray-900">3° Incompleta</option>
-                            </select>
+                            <div className="relative">
+                              <select 
+                                className="appearance-none block w-full py-1 px-2 border border-gray-300 rounded-md focus:ring-0 sm:text-sm bg-white text-black"
+                                value={trip.status}
+                                onChange={(e) => handleDirectEdit(e, trip.id, 'status')}
+                              >
+                                <option value="1° Completa" className="text-black">1° Completa</option>
+                                <option value="1° Incompleta" className="text-black">1° Incompleta</option>
+                                <option value="2° Completa" className="text-black">2° Completa</option>
+                                <option value="2° Incompleta" className="text-black">2° Incompleta</option>
+                                <option value="3° Completa" className="text-black">3° Completa</option>
+                                <option value="3° Incompleta" className="text-black">3° Incompleta</option>
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            </div>
                           </td>
                           
                           {/* Data Prev. do Manifesto */}
