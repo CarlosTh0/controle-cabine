@@ -121,17 +121,75 @@ export default function SistemaCargas() {
   };
 
   // Processar o arquivo selecionado
-  const processarArquivo = () => {
+  const processarArquivo = async () => {
     if (!arquivoSelecionado) {
       alert("Nenhum arquivo selecionado");
       return;
     }
     
-    // Aqui você processaria o arquivo real
-    // Para demonstração, vamos apenas fingir que o arquivo foi processado
-    alert(`Arquivo "${arquivoSelecionado.name}" processado com sucesso!`);
-    setSelecionarArquivo(false);
-    setArquivoSelecionado(null);
+    try {
+      const XLSX = await import('xlsx');
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          // Assume que a primeira planilha contém os dados
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Converter para JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 'A' });
+          
+          // Processar os dados extraindo as colunas necessárias (A, G, H)
+          const processedData: Carga[] = [];
+          
+          jsonData.forEach((row: any, index) => {
+            // Pular a primeira linha (cabeçalho)
+            if (index > 0) {
+              const dataHora = row['A'] ? new Date(row['A']) : new Date();
+              // Formatar a data/hora para o formato desejado
+              const horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              
+              const novaCarga: Carga = {
+                id: (cargas.length + processedData.length + 1).toString(),
+                hora: horaFormatada,
+                viagem: row['G'] || '',
+                frota: row['H'] || '',
+                preBox: '',
+                boxD: '',
+                status: "LIVRE"
+              };
+              
+              processedData.push(novaCarga);
+            }
+          });
+          
+          // Atualizar o estado com os novos dados
+          const novaListaCargas = [...cargas, ...processedData];
+          setCargas(novaListaCargas);
+          atualizarEstatisticas(novaListaCargas);
+          
+          alert(`Arquivo "${arquivoSelecionado.name}" processado com sucesso! ${processedData.length} registros importados.`);
+          setSelecionarArquivo(false);
+          setArquivoSelecionado(null);
+        } catch (error) {
+          console.error("Erro ao processar o arquivo Excel:", error);
+          alert(`Erro ao processar o arquivo: ${error}`);
+        }
+      };
+      
+      reader.onerror = () => {
+        alert("Erro ao ler o arquivo");
+      };
+      
+      reader.readAsArrayBuffer(arquivoSelecionado);
+    } catch (error) {
+      console.error("Erro ao importar a biblioteca XLSX:", error);
+      alert(`Erro ao importar a biblioteca: ${error}`);
+    }
   };
 
   // Filtrar as cargas com base na busca
@@ -152,6 +210,118 @@ export default function SistemaCargas() {
     if (ordenacao === "boxD") return a.boxD.localeCompare(b.boxD);
     return a.status.localeCompare(b.status);
   });
+  
+  // Função para processar múltiplos arquivos automaticamente
+  const buscarArquivosAutomaticamente = async () => {
+    try {
+      // Simulando a seleção de dois arquivos para o exemplo
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.multiple = true;
+      input.accept = '.xlsx, .xls';
+      
+      input.onchange = async (e) => {
+        const files = Array.from((e.target as HTMLInputElement).files || []);
+        
+        if (files.length === 0) {
+          alert("Nenhum arquivo selecionado");
+          return;
+        }
+        
+        try {
+          const XLSX = await import('xlsx');
+          let todasCargas: Carga[] = [];
+          
+          // Processar cada arquivo
+          for (const file of files) {
+            const reader = new FileReader();
+            
+            // Converter a leitura para uma promise para facilitar o processamento sequencial
+            const readFileAsArrayBuffer = () => {
+              return new Promise<ArrayBuffer>((resolve, reject) => {
+                reader.onload = (e) => resolve(e.target?.result as ArrayBuffer);
+                reader.onerror = () => reject(new Error(`Erro ao ler o arquivo ${file.name}`));
+                reader.readAsArrayBuffer(file);
+              });
+            };
+            
+            try {
+              const arrayBuffer = await readFileAsArrayBuffer();
+              const data = new Uint8Array(arrayBuffer);
+              const workbook = XLSX.read(data, { type: 'array' });
+              
+              // Assume que a primeira planilha contém os dados
+              const firstSheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[firstSheetName];
+              
+              // Converter para JSON
+              const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 'A' });
+              
+              // Processar os dados extraindo as colunas necessárias (A = Data/Hora, G = Viagem TMS, H = Frota)
+              jsonData.forEach((row: any, index) => {
+                // Pular a primeira linha (cabeçalho)
+                if (index > 0 && row['A']) {
+                  let dataHora: Date;
+                  
+                  // Manipular diferentes formatos de data
+                  if (typeof row['A'] === 'string') {
+                    dataHora = new Date(row['A']);
+                  } else if (typeof row['A'] === 'number') {
+                    // Excel guarda datas como números. Precisamos converter
+                    dataHora = new Date(Math.round((row['A'] - 25569) * 86400 * 1000));
+                  } else {
+                    dataHora = new Date(row['A']);
+                  }
+                  
+                  // Verificar se a data é válida
+                  if (!isNaN(dataHora.getTime())) {
+                    const horaFormatada = dataHora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const dataFormatada = dataHora.toLocaleDateString();
+                    
+                    const novaCarga: Carga = {
+                      id: (cargas.length + todasCargas.length + 1).toString(),
+                      hora: horaFormatada,
+                      viagem: row['G'] || '',
+                      frota: row['H'] || '',
+                      preBox: '',
+                      boxD: '',
+                      status: "LIVRE"
+                    };
+                    
+                    todasCargas.push(novaCarga);
+                  }
+                }
+              });
+              
+              console.log(`Arquivo ${file.name} processado: ${jsonData.length} linhas, ${todasCargas.length} cargas válidas`);
+            } catch (error) {
+              console.error(`Erro ao processar o arquivo ${file.name}:`, error);
+              alert(`Erro ao processar o arquivo ${file.name}: ${error}`);
+            }
+          }
+          
+          // Ordenar as cargas por data/hora
+          todasCargas.sort((a, b) => a.hora.localeCompare(b.hora));
+          
+          // Atualizar o estado com os novos dados
+          const novaListaCargas = [...cargas, ...todasCargas];
+          setCargas(novaListaCargas);
+          atualizarEstatisticas(novaListaCargas);
+          
+          alert(`Processamento concluído! ${todasCargas.length} registros importados de ${files.length} arquivos.`);
+        } catch (error) {
+          console.error("Erro ao importar a biblioteca XLSX:", error);
+          alert(`Erro ao importar a biblioteca: ${error}`);
+        }
+      };
+      
+      // Simular o clique no input
+      input.click();
+    } catch (error) {
+      console.error("Erro ao buscar arquivos:", error);
+      alert(`Erro ao buscar arquivos: ${error}`);
+    }
+  };
 
   // Removar uma carga
   const removerCarga = (id: string) => {
@@ -214,11 +384,33 @@ export default function SistemaCargas() {
             )}
           </div>
           
-          <Button variant="default" className="bg-green-500 hover:bg-green-600">
+          <Button 
+            variant="default" 
+            className="bg-green-500 hover:bg-green-600"
+            onClick={buscarArquivosAutomaticamente}
+          >
             Buscar Arquivos Automaticamente
           </Button>
           
-          <Button variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-50">
+          <Button 
+            variant="outline" 
+            className="border-blue-500 text-blue-500 hover:bg-blue-50"
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.xlsx, .xls';
+              
+              input.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) {
+                  setArquivoSelecionado(file);
+                  processarArquivo();
+                }
+              };
+              
+              input.click();
+            }}
+          >
             Carregar Excel
           </Button>
         </div>
@@ -469,7 +661,7 @@ export default function SistemaCargas() {
                           carga.status === "LIVRE" ? "outline" :
                           carga.status === "OCUPADO" ? "secondary" :
                           carga.status === "EM_CARREGAMENTO" ? "default" :
-                          "success"
+                          "outline"
                         }
                         className={
                           carga.status === "LIVRE" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" :
