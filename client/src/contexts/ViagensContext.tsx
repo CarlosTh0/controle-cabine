@@ -37,6 +37,7 @@ export const ViagensProvider: React.FC<{children: ReactNode}> = ({ children }) =
   // Atualizar a categorização das viagens sempre que a lista de trips mudar
   useEffect(() => {
     const categorizar = () => {
+      // Inicializa contagem de veículos por turno
       const categorias = {
         turno1Dia: 0,
         turno1Fechamento: 0,
@@ -46,10 +47,25 @@ export const ViagensProvider: React.FC<{children: ReactNode}> = ({ children }) =
         turno3Fechamento: 0
       };
 
+      // Mapeia para contar viagens por turno
+      const viagensPorTurno = {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0
+      };
+
       // Contabilizar quantidade de veículos por código de turno
       trips.forEach(trip => {
         // Converter quantidade para número (default para 1 se não for válido)
         const quantidade = parseInt(trip.quantity) || 1;
+        
+        // Incrementar contagem por turno
+        if (trip.shift in viagensPorTurno) {
+          viagensPorTurno[trip.shift as keyof typeof viagensPorTurno]++;
+        }
         
         switch (trip.shift) {
           case "1":
@@ -73,7 +89,10 @@ export const ViagensProvider: React.FC<{children: ReactNode}> = ({ children }) =
         }
       });
 
-      setViagensCategorizadas(categorias);
+      // Atualizar contagem de viagens por turno
+      setViagensCategorizadas(prevState => ({
+        ...categorias
+      }));
     };
 
     categorizar();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useCargas } from "../contexts/CargasContext";
 import { useViagens } from "../contexts/ViagensContext";
+import { useTrip } from "../contexts/TripContext";
 
 interface ResumoCargas {
   descricao: string;
@@ -12,6 +13,7 @@ interface ResumoCargas {
 export default function Resumo() {
   const { totalFormadasNoDia, faltamFormar, totalTurnos } = useCargas();
   const { viagensCategorizadas, totalVeiculos, totalCargas } = useViagens();
+  const { trips } = useTrip(); // Acessar diretamente a lista de viagens
   
   const [dataAtual, setDataAtual] = useState(() => {
     const hoje = new Date();
@@ -62,49 +64,66 @@ export default function Resumo() {
 
   // Atualizar dados quando as viagens mudarem
   useEffect(() => {
+    // Contar o número real de viagens por turno
+    const viagensPorTurno = {
+      "1": 0, // 1º turno dia
+      "2": 0, // 1º turno fechamento
+      "3": 0, // 2º turno dia
+      "4": 0, // 2º turno fechamento 
+      "5": 0, // 3º turno dia
+      "6": 0  // 3º turno fechamento
+    };
+    
+    // Contar o número de viagens de cada turno
+    trips.forEach(trip => {
+      if (trip.shift && trip.shift in viagensPorTurno) {
+        viagensPorTurno[trip.shift as keyof typeof viagensPorTurno]++;
+      }
+    });
+    
     // Criar um novo array com os dados atualizados
     const newCargasData = [
       {
         descricao: "CARGAS FORMADAS PELO 1º TURNO DIA SEGUINTE",
-        // Definir qtdCargas como 0 se não houver veículos para este turno
-        qtdCargas: viagensCategorizadas.turno1Dia > 0 ? 1 : 0,
+        // Usar a contagem real de viagens por turno
+        qtdCargas: viagensPorTurno["1"],
         qtdVeiculos: viagensCategorizadas.turno1Dia,
         total: viagensCategorizadas.turno1Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 1º TURNO FECHAMENTO",
-        qtdCargas: viagensCategorizadas.turno1Fechamento > 0 ? 1 : 0,
+        qtdCargas: viagensPorTurno["2"],
         qtdVeiculos: viagensCategorizadas.turno1Fechamento,
         total: viagensCategorizadas.turno1Fechamento
       },
       {
         descricao: "CARGAS FORMADAS PELO 2º TURNO DIA SEGUINTE",
-        qtdCargas: viagensCategorizadas.turno2Dia > 0 ? 1 : 0,
+        qtdCargas: viagensPorTurno["3"],
         qtdVeiculos: viagensCategorizadas.turno2Dia,
         total: viagensCategorizadas.turno2Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 2º TURNO FECHAMENTO",
-        qtdCargas: viagensCategorizadas.turno2Fechamento > 0 ? 1 : 0,
+        qtdCargas: viagensPorTurno["4"],
         qtdVeiculos: viagensCategorizadas.turno2Fechamento,
         total: viagensCategorizadas.turno2Fechamento
       },
       {
         descricao: "CARGAS FORMADAS PELO 3º TURNO DIA SEGUINTE",
-        qtdCargas: viagensCategorizadas.turno3Dia > 0 ? 1 : 0,
+        qtdCargas: viagensPorTurno["5"],
         qtdVeiculos: viagensCategorizadas.turno3Dia,
         total: viagensCategorizadas.turno3Dia
       },
       {
         descricao: "CARGAS FORMADAS PELO 3º TURNO FECHAMENTO",
-        qtdCargas: viagensCategorizadas.turno3Fechamento > 0 ? 1 : 0,
+        qtdCargas: viagensPorTurno["6"],
         qtdVeiculos: viagensCategorizadas.turno3Fechamento,
         total: viagensCategorizadas.turno3Fechamento
       }
     ];
     
     setCargasData(newCargasData);
-  }, [viagensCategorizadas]);
+  }, [trips, viagensCategorizadas]);
 
   // Calcular totais
   const totalQtdCargas = cargasData.reduce((sum, item) => sum + item.qtdCargas, 0);
