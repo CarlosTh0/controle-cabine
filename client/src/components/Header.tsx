@@ -1,5 +1,4 @@
 import { useState } from "react";
-import ThemeSelector from "./ThemeSelector";
 
 interface HeaderProps {
   activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios";
@@ -19,9 +18,7 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
           <h1 className="text-xl font-bold text-white">Sistema de Gerenciamento de Viagens</h1>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <ThemeSelector />
-          
+        <div className="flex items-center">
           <nav className="hidden md:block">
             <div className="flex space-x-4">
               <button 
