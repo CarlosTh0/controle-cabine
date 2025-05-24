@@ -1,156 +1,85 @@
+import React from "react";
+import { useCargas } from "../contexts/CargasContext";
 import { useTrip } from "../contexts/TripContext";
-import StatusBadge from "./StatusBadge";
+import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
 
-const Dashboard: React.FC = () => {
-  const { 
-    trips, 
-    getPreBoxesCount, 
-    getFreePreBoxesCount,
-    preBoxes,
-    getStatusClass
-  } = useTrip();
+export default function Dashboard() {
+  const { totalFormadasNoDia, faltamFormar, totalTurnos, regioes } = useCargas();
+  const { trips, preBoxes } = useTrip();
 
-  const getActiveTripsCount = () => trips.length;
+  // PRE-BOX status contagem
+  const livres = preBoxes.filter(pb => pb.status === "LIVRE").length;
+  const bloqueados = preBoxes.filter(pb => pb.status === "BLOQUEADO").length;
+  const emViagem = preBoxes.filter(pb => pb.status === "VIAGEM").length;
+
+  // Viagens com/sem BOX-D
+  const viagensComBoxD = trips.filter(trip => trip.boxD && trip.boxD.trim() !== "").length;
+  const viagensSemBoxD = trips.length - viagensComBoxD;
+
+  // Data atual
+  const dataAtual = (() => {
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  })();
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard do Sistema</h2>
-      
-      {/* Summary Boxes */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">Total de PRE-BOX</dt>
-                <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{getPreBoxesCount()}</div>
-                </dd>
-              </div>
-            </div>
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Geral – {dataAtual}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-4 flex flex-col items-center bg-green-50 border border-green-100">
+          <span className="text-4xl font-bold text-green-700">{totalFormadasNoDia}</span>
+          <span className="text-sm text-green-800 mt-1">Cargas previstas para hoje</span>
+          <Badge className="mt-2" variant="outline">Faltam formar: {faltamFormar}</Badge>
+          {totalTurnos > totalFormadasNoDia && (
+            <Badge className="mt-2 animate-pulse bg-green-100 text-green-800 border-green-200" variant="outline">
+              Cargas a mais: {totalTurnos - totalFormadasNoDia}
+            </Badge>
+          )}
+        </Card>
+        <Card className="p-4 flex flex-col items-center bg-blue-50 border border-blue-100">
+          <span className="text-4xl font-bold text-blue-700">{trips.length}</span>
+          <span className="text-sm text-blue-800 mt-1">Total de Viagens</span>
+          <div className="flex gap-2 mt-2">
+            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Com BOX-D: {viagensComBoxD}</Badge>
+            <Badge variant="outline" className="bg-indigo-100 text-indigo-800 border-indigo-200">Sem BOX-D: {viagensSemBoxD}</Badge>
           </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">PRE-BOX Livres</dt>
-                <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {getFreePreBoxesCount()}
-                  </div>
-                </dd>
-              </div>
-            </div>
+        </Card>
+        <Card className="p-4 flex flex-col items-center bg-yellow-50 border border-yellow-100">
+          <span className="text-4xl font-bold text-yellow-700">{preBoxes.length}</span>
+          <span className="text-sm text-yellow-800 mt-1">PRE-BOX cadastrados</span>
+          <div className="flex gap-2 mt-2">
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Livres: {livres}</Badge>
+            <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">Em Viagem: {emViagem}</Badge>
+            <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">Bloqueados: {bloqueados}</Badge>
           </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">Viagens Ativas</dt>
-                <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">{getActiveTripsCount()}</div>
-                </dd>
-              </div>
-            </div>
-          </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Status Legend */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Legenda de Status</h3>
-        </div>
-        <div className="border-t border-gray-200">
-          <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <div className="flex items-center">
-              <div className="h-4 w-4 bg-green-100 border border-green-800 rounded mr-2"></div>
-              <span className="text-green-800 font-medium">LIVRE</span>
-            </div>
-            <div className="flex items-center mt-2 sm:mt-0">
-              <div className="h-4 w-4 bg-yellow-100 border border-yellow-800 rounded mr-2"></div>
-              <span className="text-yellow-800 font-medium">VIAGEM</span>
-            </div>
-            <div className="flex items-center mt-2 sm:mt-0">
-              <div className="h-4 w-4 bg-red-100 border border-red-800 rounded mr-2"></div>
-              <span className="text-red-800 font-medium">BLOQUEADO</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Status dos PRE-BOX */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Status dos PRE-BOX</h3>
-        </div>
-        <div className="bg-white px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 p-4 rounded-md">
-              <div className="text-xl font-bold text-green-700 mb-1">
-                {preBoxes.filter(pb => pb.status === "LIVRE").length}
+      {/* Tipos de carga por região - Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+        {regioes.map((r) => {
+          const total = Number(r.chamada) + Number(r.fechamento) + Number(r.antes) + Number(r.turno1) + Number(r.turno2) + Number(r.turno3);
+          return (
+            <Card key={r.sigla} className="flex flex-col items-center p-4 bg-gray-50 border border-gray-200">
+              <span className="text-2xl font-bold text-blue-700 mb-1">{r.sigla}</span>
+              <span className="text-sm text-gray-700 mb-2">{r.nome}</span>
+              <span className="text-3xl font-bold text-indigo-800 mb-2">{total}</span>
+              <div className="flex flex-wrap gap-1 justify-center text-xs">
+                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Chamada: {r.chamada}</Badge>
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Fech: {r.fechamento}</Badge>
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">Antes: {r.antes}</Badge>
+                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">1T: {r.turno1}</Badge>
+                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">2T: {r.turno2}</Badge>
+                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">3T: {r.turno3}</Badge>
               </div>
-              <div className="text-sm text-green-600">PRE-BOX Livres</div>
-            </div>
-            <div className="bg-yellow-50 p-4 rounded-md">
-              <div className="text-xl font-bold text-yellow-700 mb-1">
-                {preBoxes.filter(pb => pb.status === "VIAGEM").length}
-              </div>
-              <div className="text-sm text-yellow-600">PRE-BOX em Viagem</div>
-            </div>
-            <div className="bg-red-50 p-4 rounded-md">
-              <div className="text-xl font-bold text-red-700 mb-1">
-                {preBoxes.filter(pb => pb.status === "BLOQUEADO").length}
-              </div>
-              <div className="text-sm text-red-600">PRE-BOX Bloqueados</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Estatísticas de Viagens */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Estatísticas de Viagens</h3>
-        </div>
-        <div className="bg-white px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-md">
-              <div className="text-xl font-bold text-blue-700 mb-1">
-                {trips.filter(trip => trip.boxD && trip.boxD.trim() !== '').length}
-              </div>
-              <div className="text-sm text-blue-600">Viagens com BOX-D atribuído</div>
-            </div>
-            <div className="bg-indigo-50 p-4 rounded-md">
-              <div className="text-xl font-bold text-indigo-700 mb-1">
-                {trips.filter(trip => !trip.boxD || trip.boxD.trim() === '').length}
-              </div>
-              <div className="text-sm text-indigo-600">Viagens sem BOX-D atribuído</div>
-            </div>
-          </div>
-        </div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

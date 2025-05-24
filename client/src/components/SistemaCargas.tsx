@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +8,13 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { useTrip } from "../contexts/TripContext";
 import useSistemaCargasStore, { CargaItem } from "../hooks/useSistemaCargasStore";
 import ConflictDetector from "./ConflictDetector";
+import { FixedSizeList as List } from "react-window";
+import { useToast, toast } from "../hooks/use-toast";
 
 export default function SistemaCargas() {
   const { trips } = useTrip();
   const store = useSistemaCargasStore();
+  useToast(); // Inicializa o sistema de toast
   
   // Estados locais do componente
   const [cargas, setCargas] = useState<CargaItem[]>(store.cargas);
@@ -24,6 +28,9 @@ export default function SistemaCargas() {
   const [totalDisponiveis, setTotalDisponiveis] = useState(store.totalDisponiveis);
   const [totalEmCarregamento, setTotalEmCarregamento] = useState(store.totalEmCarregamento);
   const [totalCompletadas, setTotalCompletadas] = useState(store.totalCompletadas);
+
+  // Loader para importação
+  const [carregandoImportacao, setCarregandoImportacao] = useState(false);
 
   // Inicializar com dados se for a primeira vez
   useEffect(() => {
@@ -129,14 +136,15 @@ export default function SistemaCargas() {
     store.removeCarga(id);
   };
 
-  // Processar o arquivo selecionado
+  // Loader visual durante importação
   const processarArquivo = async () => {
-    if (!arquivoSelecionado) {
-      alert("Nenhum arquivo selecionado");
-      return;
-    }
-    
+    setCarregandoImportacao(true);
     try {
+      if (!arquivoSelecionado) {
+        toast({ title: "Erro", description: "Nenhum arquivo selecionado", variant: "destructive" });
+        return;
+      }
+      
       const XLSX = await import('xlsx');
       const reader = new FileReader();
       
@@ -152,19 +160,12 @@ export default function SistemaCargas() {
           // Converter para JSON com cabeçalhos explícitos
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
           
-          console.log(`Arquivo carregado: ${arquivoSelecionado.name}`);
-          console.log(`Número de linhas: ${jsonData.length}`);
-          
           if (jsonData.length <= 1) {
-            console.error(`Arquivo sem dados: ${arquivoSelecionado.name}`);
-            alert("O arquivo não contém dados suficientes.");
+            toast({ title: "Erro", description: "O arquivo não contém dados suficientes.", variant: "destructive" });
             setSelecionarArquivo(false);
             setArquivoSelecionado(null);
             return;
           }
-          
-          // Log para verificar a estrutura dos dados
-          console.log("Dados do arquivo:", jsonData);
           
           // Obter dados das viagens existentes para vincular PRE-BOX e BOX-D
           const viagensData: Record<string, { preBox: string, boxD: string }> = {};
@@ -193,7 +194,6 @@ export default function SistemaCargas() {
             
             // Verificar se a linha tem dados suficientes
             if (!row || row.length < 8) {
-              console.log(`Linha ${i+1} não tem dados suficientes:`, row);
               continue;
             }
             
@@ -204,10 +204,7 @@ export default function SistemaCargas() {
             const viagemValue = row[6];
             const frotaValue = row[7];
             
-            console.log(`Linha ${i+1}:`, { dataHora: dataHoraValue, viagem: viagemValue, frota: frotaValue });
-            
             if (!dataHoraValue || !viagemValue) {
-              console.log(`Linha ${i+1} não tem dados essenciais`);
               continue;
             }
             
@@ -223,7 +220,6 @@ export default function SistemaCargas() {
                     horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                   }
                 } catch (e) {
-                  console.log(`Erro ao processar data: ${e}`);
                 }
               }
             } else if (typeof dataHoraValue === 'number') {
@@ -234,14 +230,12 @@ export default function SistemaCargas() {
                   horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
               } catch (e) {
-                console.log(`Erro ao processar número como data: ${e}`);
               }
             } else if (dataHoraValue instanceof Date) {
               horaFormatada = dataHoraValue.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
             
             if (!horaFormatada) {
-              console.log(`Não foi possível extrair hora da linha ${i+1}`);
               continue;
             }
             
@@ -263,7 +257,6 @@ export default function SistemaCargas() {
               status: "LIVRE"
             };
             
-            console.log(`Nova carga adicionada:`, novaCarga);
             processedData.push(novaCarga);
           }
           
@@ -272,30 +265,29 @@ export default function SistemaCargas() {
           
           // Adicionar as cargas processadas ao store
           store.addCargas(processedData);
-          
-          alert(`Arquivo "${arquivoSelecionado.name}" processado com sucesso! ${processedData.length} registros importados.`);
+          toast({ title: "Sucesso", description: `Arquivo \"${arquivoSelecionado.name}\" processado com sucesso! ${processedData.length} registros importados.`, variant: "default" });
           setSelecionarArquivo(false);
           setArquivoSelecionado(null);
         } catch (error) {
-          console.error("Erro ao processar o arquivo Excel:", error);
-          alert(`Erro ao processar o arquivo: ${error}`);
+          toast({ title: "Erro", description: `Erro ao processar o arquivo: ${error}`, variant: "destructive" });
           setSelecionarArquivo(false);
           setArquivoSelecionado(null);
         }
       };
       
       reader.onerror = () => {
-        alert("Erro ao ler o arquivo");
+        toast({ title: "Erro", description: "Erro ao ler o arquivo", variant: "destructive" });
         setSelecionarArquivo(false);
         setArquivoSelecionado(null);
       };
       
       reader.readAsArrayBuffer(arquivoSelecionado);
     } catch (error) {
-      console.error("Erro ao importar a biblioteca XLSX:", error);
-      alert(`Erro ao importar a biblioteca: ${error}`);
+      toast({ title: "Erro", description: `Erro ao importar a biblioteca: ${error}`, variant: "destructive" });
       setSelecionarArquivo(false);
       setArquivoSelecionado(null);
+    } finally {
+      setCarregandoImportacao(false);
     }
   };
   
@@ -312,7 +304,7 @@ export default function SistemaCargas() {
         const files = Array.from((e.target as HTMLInputElement).files || []);
         
         if (files.length === 0) {
-          alert("Nenhum arquivo selecionado");
+          toast({ title: "Erro", description: "Nenhum arquivo selecionado", variant: "destructive" });
           return;
         }
         
@@ -341,19 +333,15 @@ export default function SistemaCargas() {
           // Função para buscar informações de PRE-BOX e BOX-D das viagens existentes
           const buscarInfoViagem = (numeroViagem: string) => {
             // Verificar todas as viagens na aba Viagens
-            console.log(`Buscando viagem #${numeroViagem} em ${trips.length} viagens`);
-            
             // Verificar se o número da viagem (id) existe na aba Viagens
             const viagemEncontrada = trips.find(trip => trip.id === numeroViagem);
             
             if (viagemEncontrada) {
-              console.log(`ENCONTRADA! Viagem ${numeroViagem} com PRE-BOX: ${viagemEncontrada.preBox}, BOX-D: ${viagemEncontrada.boxD}`);
               return {
                 preBox: viagemEncontrada.preBox || '',
                 boxD: viagemEncontrada.boxD || ''
               };
             } else {
-              console.log(`NÃO ENCONTRADA! Viagem ${numeroViagem} não existe na aba Viagens`);
               return { preBox: '', boxD: '' };
             }
           };
@@ -383,16 +371,10 @@ export default function SistemaCargas() {
               // Converter para JSON com cabeçalhos explícitos
               const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
               
-              console.log(`Arquivo carregado: ${file.name}`);
-              console.log(`Número de linhas: ${jsonData.length}`);
-              
               if (jsonData.length <= 1) {
-                console.error(`Arquivo sem dados: ${file.name}`);
+                toast({ title: "Erro", description: `Arquivo sem dados: ${file.name}`, variant: "destructive" });
                 continue;
               }
-              
-              // Log para verificar a estrutura dos dados
-              console.log("Dados do arquivo:", jsonData);
               
               // Processar os dados das linhas
               for (let i = 1; i < jsonData.length; i++) {
@@ -400,7 +382,6 @@ export default function SistemaCargas() {
                 
                 // Verificar se a linha tem dados suficientes
                 if (!row || row.length < 8) {
-                  console.log(`Linha ${i+1} não tem dados suficientes:`, row);
                   continue;
                 }
                 
@@ -411,10 +392,7 @@ export default function SistemaCargas() {
                 const viagemValue = row[6];
                 const frotaValue = row[7];
                 
-                console.log(`Linha ${i+1}:`, { dataHora: dataHoraValue, viagem: viagemValue, frota: frotaValue });
-                
                 if (!dataHoraValue || !viagemValue) {
-                  console.log(`Linha ${i+1} não tem dados essenciais`);
                   continue;
                 }
                 
@@ -430,7 +408,6 @@ export default function SistemaCargas() {
                         horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                       }
                     } catch (e) {
-                      console.log(`Erro ao processar data: ${e}`);
                     }
                   }
                 } else if (typeof dataHoraValue === 'number') {
@@ -441,14 +418,12 @@ export default function SistemaCargas() {
                       horaFormatada = dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     }
                   } catch (e) {
-                    console.log(`Erro ao processar número como data: ${e}`);
                   }
                 } else if (dataHoraValue instanceof Date) {
                   horaFormatada = dataHoraValue.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
                 
                 if (!horaFormatada) {
-                  console.log(`Não foi possível extrair hora da linha ${i+1}`);
                   continue;
                 }
                 
@@ -463,7 +438,7 @@ export default function SistemaCargas() {
                 const boxD = infoViagem.boxD;
                 
                 // Gerar um ID único baseado no timestamp e um número aleatório
-                const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${i}`;
+                const uniqueId = Date.now().toString() + '-' + Math.floor(Math.random() * 10000).toString() + '-' + i.toString();
                 
                 const novaCarga: CargaItem = {
                   id: uniqueId,
@@ -475,14 +450,11 @@ export default function SistemaCargas() {
                   status: "LIVRE"
                 };
                 
-                console.log(`Nova carga adicionada:`, novaCarga);
                 todasCargas.push(novaCarga);
               }
               
-              console.log(`Arquivo ${file.name} processado: ${jsonData.length} linhas, ${todasCargas.length} cargas válidas`);
             } catch (error) {
-              console.error(`Erro ao processar o arquivo ${file.name}:`, error);
-              alert(`Erro ao processar o arquivo ${file.name}: ${error}`);
+              toast({ title: "Erro", description: `Erro ao processar o arquivo ${file.name}: ${error}`, variant: "destructive" });
             }
           }
           
@@ -492,33 +464,32 @@ export default function SistemaCargas() {
           // Adicionar as cargas processadas ao store
           store.addCargas(todasCargas);
           
-          alert(`Processamento concluído! ${todasCargas.length} registros importados de ${files.length} arquivos.`);
+          toast({ title: "Sucesso", description: `Processamento concluído! ${todasCargas.length} registros importados de ${files.length} arquivos.`, variant: "default" });
         } catch (error) {
-          console.error("Erro ao importar a biblioteca XLSX:", error);
-          alert(`Erro ao importar a biblioteca: ${error}`);
+          toast({ title: "Erro", description: `Erro ao importar a biblioteca: ${error}`, variant: "destructive" });
         }
       };
       
       // Simular o clique no input
       input.click();
     } catch (error) {
-      console.error("Erro ao buscar arquivos:", error);
-      alert(`Erro ao buscar arquivos: ${error}`);
+      toast({ title: "Erro", description: `Erro ao buscar arquivos: ${error}`, variant: "destructive" });
     }
   };
 
   // Filtrar as cargas com base na busca
-  const cargasFiltradas = filtro ? store.filterCargas(filtro) : cargas;
+  const cargasFiltradas = useMemo(() => filtro ? store.filterCargas(filtro) : cargas, [filtro, store, cargas]);
 
   // Ordenar as cargas
-  const cargasOrdenadas = [...cargasFiltradas].sort((a, b) => {
-    if (ordenacao === "hora") return a.hora.localeCompare(b.hora);
-    if (ordenacao === "viagem") return a.viagem.localeCompare(b.viagem);
-    if (ordenacao === "frota") return a.frota.localeCompare(b.frota);
-    if (ordenacao === "preBox") return a.preBox.localeCompare(b.preBox);
-    if (ordenacao === "boxD") return a.boxD.localeCompare(b.boxD);
-    return a.status.localeCompare(b.status);
-  });
+  const cargasOrdenadas = useMemo(() => {
+    const arr = [...cargasFiltradas];
+    if (ordenacao === "hora") return arr.sort((a, b) => a.hora.localeCompare(b.hora));
+    if (ordenacao === "viagem") return arr.sort((a, b) => a.viagem.localeCompare(b.viagem));
+    if (ordenacao === "frota") return arr.sort((a, b) => a.frota.localeCompare(b.frota));
+    if (ordenacao === "preBox") return arr.sort((a, b) => a.preBox.localeCompare(b.preBox));
+    if (ordenacao === "boxD") return arr.sort((a, b) => a.boxD.localeCompare(b.boxD));
+    return arr.sort((a, b) => a.status.localeCompare(b.status));
+  }, [cargasFiltradas, ordenacao]);
 
   return (
     <div className="space-y-6">
@@ -623,7 +594,7 @@ export default function SistemaCargas() {
           <p className="text-3xl font-bold text-blue-900">{totalViagens}</p>
           <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto text-blue-700 hover:text-blue-800">
             <svg className="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" clipRule="evenodd" />
             </svg>
           </Button>
         </Card>
@@ -691,7 +662,7 @@ export default function SistemaCargas() {
               size="sm"
               onClick={() => {
                 // Exportar para Excel
-                alert('Exportando para Excel...');
+                toast({ title: "Atenção", description: "Funcionalidade de exportação ainda não implementada.", variant: "default" });
               }}
             >
               Exportar Excel
@@ -715,7 +686,7 @@ export default function SistemaCargas() {
               placeholder="Buscar viagem, frota, box..."
               className="pl-10"
               value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFiltro(e.target.value)}
             />
           </div>
           
@@ -783,102 +754,119 @@ export default function SistemaCargas() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {cargasOrdenadas.map((carga) => (
-                <tr key={carga.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      className="w-full p-1 border border-gray-200 rounded-md text-sm"
-                      value={carga.hora}
-                      onChange={(e) => store.updateCarga(carga.id, { hora: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      className="w-full p-1 border border-gray-200 rounded-md text-sm"
-                      value={carga.viagem}
-                      onChange={(e) => store.updateCarga(carga.id, { viagem: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      className="w-full p-1 border border-gray-200 rounded-md text-sm"
-                      value={carga.frota}
-                      onChange={(e) => store.updateCarga(carga.id, { frota: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      className="w-full p-1 border border-gray-200 rounded-md text-sm"
-                      value={carga.preBox}
-                      onChange={(e) => store.updateCarga(carga.id, { preBox: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      className="w-full p-1 border border-gray-200 rounded-md text-sm"
-                      value={carga.boxD}
-                      onChange={(e) => store.updateCarga(carga.id, { boxD: e.target.value })}
-                    />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Badge 
-                        variant={
-                          carga.status === "LIVRE" ? "outline" :
-                          carga.status === "OCUPADO" ? "secondary" :
-                          carga.status === "EM_CARREGAMENTO" ? "default" :
-                          "outline"
-                        }
-                        className={
-                          carga.status === "LIVRE" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" :
-                          carga.status === "OCUPADO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100" :
-                          carga.status === "EM_CARREGAMENTO" ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" :
-                          "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100"
-                        }
-                      >
-                        {carga.status === "LIVRE" && "LIVRE"}
-                        {carga.status === "OCUPADO" && "OCUPADO"}
-                        {carga.status === "EM_CARREGAMENTO" && "EM CARREGAMENTO"}
-                        {carga.status === "COMPLETO" && "COMPLETO"}
-                      </Badge>
-                      <button 
-                        className="ml-2 text-gray-400 hover:text-gray-600"
-                        onClick={() => {
-                          const novoStatus = carga.status === "LIVRE" ? "OCUPADO" : 
-                                            carga.status === "OCUPADO" ? "EM_CARREGAMENTO" : 
-                                            carga.status === "EM_CARREGAMENTO" ? "COMPLETO" : "LIVRE";
-                          mudarStatus(carga.id, novoStatus as CargaItem["status"]);
-                        }}
-                      >
-                        <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => removerCarga(carga.id)}
-                    >
-                      <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              <List
+                height={400}
+                itemCount={cargasOrdenadas.length}
+                itemSize={56}
+                width={"100%"}
+              >
+                {({ index, style }) => {
+                  const carga = cargasOrdenadas[index];
+                  return (
+                    <tr key={carga.id} style={style} className="hover:bg-gray-50">
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          className="w-full p-1 border border-gray-200 rounded-md text-sm"
+                          value={carga.hora}
+                          onChange={(e) => store.updateCarga(carga.id, { hora: e.target.value })}
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          className="w-full p-1 border border-gray-200 rounded-md text-sm"
+                          value={carga.viagem}
+                          onChange={(e) => store.updateCarga(carga.id, { viagem: e.target.value })}
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          className="w-full p-1 border border-gray-200 rounded-md text-sm"
+                          value={carga.frota}
+                          onChange={(e) => store.updateCarga(carga.id, { frota: e.target.value })}
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          className="w-full p-1 border border-gray-200 rounded-md text-sm"
+                          value={carga.preBox}
+                          onChange={(e) => store.updateCarga(carga.id, { preBox: e.target.value })}
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <input
+                          type="text"
+                          className="w-full p-1 border border-gray-200 rounded-md text-sm"
+                          value={carga.boxD}
+                          onChange={(e) => store.updateCarga(carga.id, { boxD: e.target.value })}
+                        />
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Badge 
+                            variant={
+                              carga.status === "LIVRE" ? "outline" :
+                              carga.status === "OCUPADO" ? "secondary" :
+                              carga.status === "EM_CARREGAMENTO" ? "default" :
+                              "outline"
+                            }
+                            className={
+                              carga.status === "LIVRE" ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" :
+                              carga.status === "OCUPADO" ? "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100" :
+                              carga.status === "EM_CARREGAMENTO" ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100" :
+                              "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100"
+                            }
+                          >
+                            {carga.status === "LIVRE" && "LIVRE"}
+                            {carga.status === "OCUPADO" && "OCUPADO"}
+                            {carga.status === "EM_CARREGAMENTO" && "EM CARREGAMENTO"}
+                            {carga.status === "COMPLETO" && "COMPLETO"}
+                          </Badge>
+                          <button 
+                            className="ml-2 text-gray-400 hover:text-gray-600"
+                            onClick={() => {
+                              const novoStatus = carga.status === "LIVRE" ? "OCUPADO" : 
+                                                carga.status === "OCUPADO" ? "EM_CARREGAMENTO" : 
+                                                carga.status === "EM_CARREGAMENTO" ? "COMPLETO" : "LIVRE";
+                              mudarStatus(carga.id, novoStatus as CargaItem["status"]);
+                            }}
+                          >
+                            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 whitespace-nowrap text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removerCarga(carga.id)}
+                        >
+                          <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                }}
+              </List>
             </tbody>
           </table>
         </div>
       </Card>
+
+      {/* Renderização do loader */}
+      {carregandoImportacao && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+          <div className="p-6 bg-white rounded shadow text-lg font-bold text-blue-600">Importando arquivo, aguarde...</div>
+        </div>
+      )}
     </div>
   );
 }

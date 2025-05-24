@@ -88,6 +88,10 @@ const GerenciamentoUsuarios: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPermission, setFilterPermission] = useState<PermissionLevel | "all">("all");
   
+  // Estado para mostrar/ocultar senha no cadastro
+  const [showNewUserPassword, setShowNewUserPassword] = useState(false);
+  const [showEditUserPassword, setShowEditUserPassword] = useState(false);
+  
   // Adicionar novo usuário
   const handleAddUser = () => {
     if (!newUser.username || !newUser.email) {
@@ -359,14 +363,29 @@ const GerenciamentoUsuarios: React.FC = () => {
               <label htmlFor="password" className="text-right font-medium">
                 Senha
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Digite a senha"
-                className="col-span-3"
-                value={newUser.password}
-                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-              />
+              <div className="col-span-3 relative">
+                <Input
+                  id="password"
+                  type={showNewUserPassword ? "text" : "password"}
+                  placeholder="Digite a senha"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-label={showNewUserPassword ? "Ocultar senha" : "Mostrar senha"}
+                  onClick={() => setShowNewUserPassword(v => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center px-2 focus:outline-none"
+                >
+                  {showNewUserPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95m3.362-2.522A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.973 9.973 0 01-4.043 5.306M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" /></svg>
+                  )}
+                </button>
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
@@ -461,14 +480,29 @@ const GerenciamentoUsuarios: React.FC = () => {
                 <label htmlFor="edit-password" className="text-right font-medium">
                   Senha
                 </label>
-                <Input
-                  id="edit-password"
-                  type="password"
-                  placeholder="Digite a nova senha"
-                  className="col-span-3"
-                  value={currentUser.password}
-                  onChange={(e) => setCurrentUser({...currentUser, password: e.target.value})}
-                />
+                <div className="col-span-3 relative">
+                  <Input
+                    id="edit-password"
+                    type={showEditUserPassword ? "text" : "password"}
+                    placeholder="Digite a nova senha"
+                    value={currentUser.password}
+                    onChange={(e) => setCurrentUser({...currentUser, password: e.target.value})}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    aria-label={showEditUserPassword ? "Ocultar senha" : "Mostrar senha"}
+                    onClick={() => setShowEditUserPassword(v => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-2 focus:outline-none"
+                  >
+                    {showEditUserPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95m3.362-2.522A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.973 9.973 0 01-4.043 5.306M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" /></svg>
+                    )}
+                  </button>
+                </div>
               </div>
               
               <div className="grid grid-cols-4 items-center gap-4">

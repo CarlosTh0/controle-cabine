@@ -9,8 +9,6 @@ import PreBoxManagement from "./components/PreBoxManagement";
 import TripsTable from "./components/TripsTable";
 import PainelCargas from "./components/PainelCargas";
 import Resumo from "./components/Resumo";
-import SistemaCargas from "./components/SistemaCargas";
-import EstatisticasAvancadas from "./components/EstatisticasAvancadas";
 import GerenciamentoUsuarios from "./components/GerenciamentoUsuarios";
 import ConfirmationModal from "./components/ConfirmationModal";
 import LoginForm from "./components/LoginForm";
@@ -20,12 +18,14 @@ import { ViagensProvider } from "./contexts/ViagensContext";
 
 function MainApp() {
   const { isAuthenticated, logout, currentUser } = useTrip();
-  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "usuarios">("dashboard");
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header activeSection={activeSection} setActiveSection={setActiveSection} />
-      
+      {/* Header só aparece se autenticado */}
+      {isAuthenticated && (
+        <Header activeSection={activeSection} setActiveSection={setActiveSection} />
+      )}
       {/* Barra de usuário logado */}
       {isAuthenticated && (
         <div className="bg-blue-600 text-white px-4 py-2">
@@ -40,18 +40,15 @@ function MainApp() {
           </div>
         </div>
       )}
-      
       <main className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           {isAuthenticated ? (
             <>
               {activeSection === "dashboard" && <Dashboard />}
-              {activeSection === "preBoxes" && <PreBoxManagement />}
-              {activeSection === "trips" && <TripsTable />}
-              {activeSection === "painelCargas" && <PainelCargas />}
               {activeSection === "resumo" && <Resumo />}
-              {activeSection === "sistemaCargas" && <SistemaCargas />}
-              {activeSection === "estatisticas" && <EstatisticasAvancadas />}
+              {activeSection === "painelCargas" && <PainelCargas />}
+              {activeSection === "trips" && <TripsTable />}
+              {activeSection === "preBoxes" && <PreBoxManagement />}
               {activeSection === "usuarios" && <GerenciamentoUsuarios />}
               <ConfirmationModal />
             </>
@@ -60,7 +57,6 @@ function MainApp() {
           )}
         </div>
       </main>
-
       <footer className="bg-white">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <p className="text-sm text-gray-500 text-center">

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import axios from "axios";
 
 // Types
 export type PreBoxStatus = "LIVRE" | "VIAGEM" | "BLOQUEADO";
@@ -53,13 +54,13 @@ export interface TripContextType {
   isAuthenticated: boolean;
   currentUser: string | null;
   setNewPreBoxId: (id: string) => void;
-  handleAddPreBox: () => void;
-  handleToggleStatus: (id: string) => void;
-  handleDeletePreBox: (id: string) => void;
-  handleLinkTrip: (preBoxId: string) => void;
-  handleCreateTrip: (preBoxId: string, tripData?: any, directToBoxD?: boolean) => boolean;
-  handleUpdateTrip: (tripId: string, updatedFields: Partial<Trip>) => void;
-  handleDeleteTrip: (tripId: string) => void;
+  handleAddPreBox: () => void | Promise<void>;
+  handleToggleStatus: (id: string) => void | Promise<void>;
+  handleDeletePreBox: (id: string) => void | Promise<void>;
+  handleLinkTrip: (preBoxId: string) => void | Promise<void>;
+  handleCreateTrip: (preBoxId: string, tripData?: any, directToBoxD?: boolean) => Promise<boolean>;
+  handleUpdateTrip: (tripId: string, updatedFields: Partial<Trip>) => void | Promise<void>;
+  handleDeleteTrip: (tripId: string) => void | Promise<void>;
   showConfirmModal: (action: ModalAction) => void;
   closeModal: () => void;
   getPreBoxesCount: () => number;
@@ -84,64 +85,22 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  // Load data from localStorage on mount
+  // Load data from backend on mount
   useEffect(() => {
-    const storedPreBoxes = localStorage.getItem('preBoxes');
-    const storedTrips = localStorage.getItem('trips');
-    const savedAuth = localStorage.getItem('isAuthenticated');
-    const savedUser = localStorage.getItem('currentUser');
-
-    if (storedPreBoxes) {
-      setPreBoxes(JSON.parse(storedPreBoxes));
-    } else {
-      // Default PRE-BOXes
-      const defaultPreBoxes: PreBox[] = [
-        { id: "50", status: "LIVRE" },
-        { id: "51", status: "VIAGEM", tripId: "V1234" },
-        { id: "300", status: "BLOQUEADO" }
-      ];
-      setPreBoxes(defaultPreBoxes);
-      localStorage.setItem('preBoxes', JSON.stringify(defaultPreBoxes));
-    }
-
-    if (storedTrips) {
-      setTrips(JSON.parse(storedTrips));
-    } else {
-      // Default trip
-      const defaultTrips: Trip[] = [
-        {
-          id: "V1234",
-          date: "17/05/2025",
-          time: "10:30",
-          oldTrip: "V999",
-          preBox: "51",
-          boxD: "",
-          quantity: "100",
-          shift: "2",
-          region: "Sul",
-          status: "Completa",
-          manifestDate: "17/05/2025"
-        }
-      ];
-      setTrips(defaultTrips);
-      localStorage.setItem('trips', JSON.stringify(defaultTrips));
-    }
-
-    // Verificar autenticação
-    if (savedAuth === 'true' && savedUser) {
-      setIsAuthenticated(true);
-      setCurrentUser(savedUser);
-    }
+    const fetchData = async () => {
+      try {
+        const [tripsRes, preBoxesRes] = await Promise.all([
+          axios.get("/api/trips"),
+          axios.get("/api/preboxes")
+        ]);
+        setTrips(tripsRes.data);
+        setPreBoxes(preBoxesRes.data);
+      } catch (err) {
+        setError("Erro ao carregar dados do servidor.");
+      }
+    };
+    fetchData();
   }, []);
-
-  // Persistir alterações no localStorage
-  useEffect(() => {
-    localStorage.setItem('preBoxes', JSON.stringify(preBoxes));
-  }, [preBoxes]);
-
-  useEffect(() => {
-    localStorage.setItem('trips', JSON.stringify(trips));
-  }, [trips]);
 
   // Gerar um ID para PRE-BOX
   const generatePreBoxId = (): string => {
@@ -182,8 +141,8 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
-  // Add PRE-BOX
-  const handleAddPreBox = () => {
+  // Função para adicionar PRE-BOX via API
+  const handleAddPreBox = async () => {
     // Validar o ID
     if (!newPreBoxId) {
       setError("Por favor, informe um ID para o PRE-BOX.");
@@ -191,60 +150,63 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
 
     // Verificar se o ID já existe
-    if (preBoxes.some(box => box.id === newPreBoxId)) {
+    if (preBoxes.some(box => box.id.toLowerCase() === newPreBoxId.toLowerCase())) {
       setError(`O PRE-BOX com ID ${newPreBoxId} já existe.`);
       return;
     }
 
-    // Validar o formato do ID (entre 50-55 ou 300-356)
-    const preBoxNum = parseInt(newPreBoxId);
-    if (isNaN(preBoxNum) || 
-        !((preBoxNum >= 50 && preBoxNum <= 55) || 
-          (preBoxNum >= 300 && preBoxNum <= 356))) {
-      setError("O ID do PRE-BOX deve estar entre 50-55 ou 300-356.");
-      return;
+    // Permitir IDs alfanuméricos (com letras)
+    const hasLetter = /[a-zA-Z]/.test(newPreBoxId);
+    if (!hasLetter) {
+      // Se for só número, validar o intervalo
+      const preBoxNum = parseInt(newPreBoxId);
+      if (isNaN(preBoxNum) || !((preBoxNum >= 50 && preBoxNum <= 55) || (preBoxNum >= 300 && preBoxNum <= 356))) {
+        setError("O ID do PRE-BOX deve estar entre 50-55, 300-356 ou conter letras.");
+        return;
+      }
     }
 
-    // Add new PRE-BOX
-    const newPreBox: PreBox = {
-      id: newPreBoxId,
-      status: "LIVRE"
-    };
-
-    setPreBoxes([...preBoxes, newPreBox]);
-    setNewPreBoxId(""); // Clear the input
-    setError(""); // Clear any error
+    try {
+      const res = await axios.post("/api/preboxes", { id: newPreBoxId, status: "LIVRE" });
+      setPreBoxes([...preBoxes, res.data]);
+      setNewPreBoxId(""); // Clear the input
+      setError(""); // Clear any error
+    } catch (err) {
+      setError("Erro ao criar PRE-BOX no servidor.");
+    }
   };
 
-  // Toggle PRE-BOX status
-  const handleToggleStatus = (id: string) => {
-    setPreBoxes(preBoxes.map(preBox => {
-      if (preBox.id === id) {
-        if (preBox.status === "LIVRE") {
-          return { ...preBox, status: "BLOQUEADO" };
-        } else if (preBox.status === "BLOQUEADO") {
-          return { ...preBox, status: "LIVRE" };
-        }
-      }
-      return preBox;
-    }));
+  // Função para alternar status do PRE-BOX via API
+  const handleToggleStatus = async (id: string) => {
+    const preBox = preBoxes.find(pb => pb.id === id);
+    if (!preBox) return;
+    const newStatus = preBox.status === "LIVRE" ? "BLOQUEADO" : "LIVRE";
+    try {
+      await axios.patch(`/api/preboxes/${id}`, { status: newStatus });
+      setPreBoxes(preBoxes.map(pb => pb.id === id ? { ...pb, status: newStatus } : pb));
+    } catch (err) {
+      setError("Erro ao atualizar status do PRE-BOX.");
+    }
   };
 
-  // Delete PRE-BOX
-  const handleDeletePreBox = (id: string) => {
-    setPreBoxes(preBoxes.filter(preBox => preBox.id !== id));
-    setShowModal(false); // Fechar o modal após a exclusão
-    setModalContent(null); // Importante: também precisa limpar o conteúdo do modal
+  // Função para deletar PRE-BOX via API
+  const handleDeletePreBox = async (id: string) => {
+    try {
+      await axios.delete(`/api/preboxes/${id}`);
+      setPreBoxes(preBoxes.filter(pb => pb.id !== id));
+      setShowModal(false); // Fechar o modal após a exclusão
+      setModalContent(null); // Importante: também precisa limpar o conteúdo do modal
+    } catch (err) {
+      setError("Erro ao deletar PRE-BOX.");
+    }
   };
 
-  // Link trip to PRE-BOX
-  const handleLinkTrip = (preBoxId: string) => {
+  // Função para criar viagem vinculada a PRE-BOX via API
+  const handleLinkTrip = async (preBoxId: string) => {
     const tripId = generateTripId();
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    
-    // Create new trip with random data
     const newTrip: Trip = {
       id: tripId,
       date: formatDate(today),
@@ -258,65 +220,46 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       status: Math.random() > 0.5 ? "Completa" : "Incompleta",
       manifestDate: formatDate(tomorrow)
     };
-    
-    setTrips([...trips, newTrip]);
-    
-    // Update PRE-BOX status
-    setPreBoxes(preBoxes.map(preBox => {
-      if (preBox.id === preBoxId) {
-        return {
-          ...preBox,
-          status: "VIAGEM",
-          tripId: tripId
-        };
-      }
-      return preBox;
-    }));
-    
-    // Close modal
-    setShowModal(false);
-    setModalContent(null);
+    try {
+      const res = await axios.post("/api/trips", newTrip);
+      setTrips([...trips, res.data]);
+      // Atualiza o PRE-BOX localmente
+      setPreBoxes(preBoxes.map(pb => pb.id === preBoxId ? { ...pb, status: "VIAGEM", tripId: tripId } : pb));
+      setShowModal(false);
+      setModalContent(null);
+    } catch (err) {
+      setError("Erro ao criar viagem no servidor.");
+    }
   };
 
-  // Create trip with custom data
-  const handleCreateTrip = (preBoxId: string, tripData?: any, directToBoxD: boolean = false) => {
+  // Função para criar viagem via API
+  const handleCreateTrip = async (preBoxId: string, tripData?: any, directToBoxD: boolean = false) => {
     try {
-      console.log("Criando viagem:", { preBoxId, tripData, directToBoxD });
-      
-      // Use the user-provided ID or generate a new one
       const tripId = tripData?.id && tripData.id.trim() !== "" ? tripData.id : generateTripId();
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      
-      // Check if trip ID already exists
       if (trips.some(trip => trip.id === tripId)) {
         setError(`Já existe uma viagem com o ID ${tripId}.`);
         return false;
       }
-      
-      // Se não for criação direta para BOX-D, verificar o PRE-BOX
       if (!directToBoxD && preBoxId !== "DIRECT_TO_BOXD") {
-        // Check if PRE-BOX exists and is available
         const preBox = preBoxes.find(pb => pb.id === preBoxId);
         if (!preBox) {
           setError(`PRE-BOX ${preBoxId} não encontrado.`);
           return false;
         }
-        
         if (preBox.status !== "LIVRE") {
           setError(`PRE-BOX ${preBoxId} não está livre.`);
           return false;
         }
       }
-      
-      // Create new trip with custom data
       const newTrip: Trip = {
         id: tripId,
         date: formatDate(today),
         time: formatTime(today),
         oldTrip: tripData?.oldTrip || "",
-        preBox: directToBoxD ? "" : preBoxId, // Se for direto para BOX-D, não associamos a um PRE-BOX
+        preBox: directToBoxD ? "" : preBoxId,
         boxD: tripData?.boxD || "",
         quantity: tripData?.quantity || String(Math.floor(Math.random() * 100) + 50),
         shift: tripData?.shift || "1",
@@ -324,106 +267,68 @@ export const TripProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         status: tripData?.status || "Completa",
         manifestDate: formatDate(tomorrow)
       };
-      
-      // Adicionar a viagem
-      setTrips(prev => [...prev, newTrip]);
-      
-      // Se for criação direta para BOX-D, não atualizar PRE-BOX
+      const res = await axios.post("/api/trips", newTrip);
+      setTrips(prev => [...prev, res.data]);
       if (!directToBoxD) {
-        // Update PRE-BOX status
         const newStatus = newTrip.boxD ? "LIVRE" : "VIAGEM";
-        
         setPreBoxes(prev => prev.map(preBox => {
           if (preBox.id === preBoxId) {
             if (newStatus === "LIVRE") {
-              // If BOX-D is filled, remove the trip reference but keep the history
-              return {
-                ...preBox,
-                status: newStatus,
-                tripId: undefined
-              };
+              return { ...preBox, status: newStatus, tripId: undefined };
             } else {
-              // Otherwise, link the trip to the PRE-BOX
-              return {
-                ...preBox,
-                status: newStatus,
-                tripId: tripId
-              };
+              return { ...preBox, status: newStatus, tripId: tripId };
             }
           }
           return preBox;
         }));
       }
-      
-      console.log("Viagem criada com sucesso:", newTrip);
-      setError(""); // Clear any previous error
+      setError("");
       return true;
     } catch (err) {
-      console.error("Erro ao criar viagem:", err);
-      setError("Erro ao criar viagem. Tente novamente.");
+      setError("Erro ao criar viagem no servidor.");
       return false;
     }
   };
 
-  // Update trip
-  const handleUpdateTrip = (tripId: string, updatedFields: Partial<Trip>) => {
-    // Check if we're updating BOX-D and it's being filled
+  // Função para atualizar viagem via API
+  const handleUpdateTrip = async (tripId: string, updatedFields: Partial<Trip>) => {
     const tripToUpdate = trips.find(trip => trip.id === tripId);
-    const hasBoxDChanged = updatedFields.boxD !== undefined && 
-                           (!tripToUpdate?.boxD || tripToUpdate.boxD === "") && 
-                           updatedFields.boxD !== "";
-    
-    // Update trip
-    setTrips(prev => prev.map(trip => {
-      if (trip.id === tripId) {
-        return { ...trip, ...updatedFields };
+    const hasBoxDChanged = updatedFields.boxD !== undefined && (!tripToUpdate?.boxD || tripToUpdate.boxD === "") && updatedFields.boxD !== "";
+    try {
+      const res = await axios.patch(`/api/trips/${tripId}`, updatedFields);
+      setTrips(prev => prev.map(trip => trip.id === tripId ? { ...trip, ...updatedFields } : trip));
+      if (hasBoxDChanged && tripToUpdate) {
+        const preBoxId = tripToUpdate.preBox;
+        setPreBoxes(prev => prev.map(preBox => {
+          if (preBox.id === preBoxId && preBox.status === "VIAGEM") {
+            return { ...preBox, status: "LIVRE", tripId: undefined };
+          }
+          return preBox;
+        }));
       }
-      return trip;
-    }));
-    
-    // If BOX-D is being changed from empty to filled, free up the PRE-BOX
-    if (hasBoxDChanged && tripToUpdate) {
-      const preBoxId = tripToUpdate.preBox;
-      
-      setPreBoxes(prev => prev.map(preBox => {
-        if (preBox.id === preBoxId && preBox.status === "VIAGEM") {
-          return {
-            ...preBox,
-            status: "LIVRE",
-            tripId: undefined
-          };
-        }
-        return preBox;
-      }));
+    } catch (err) {
+      setError("Erro ao atualizar viagem.");
     }
   };
 
-  // Delete trip
-  const handleDeleteTrip = (tripId: string) => {
-    // Find the trip to get the PRE-BOX reference
+  // Função para deletar viagem via API
+  const handleDeleteTrip = async (tripId: string) => {
     const tripToDelete = trips.find(trip => trip.id === tripId);
-    
     if (!tripToDelete) return;
-    
-    // Remove the trip
-    setTrips(prev => prev.filter(trip => trip.id !== tripId));
-    
-    // Update PRE-BOXes that are using this trip
-    setPreBoxes(prev => prev.map(preBox => {
-      if (preBox.id === tripToDelete.preBox && preBox.status === "VIAGEM") {
-        // Free up the PRE-BOX
-        return { 
-          ...preBox,
-          status: "LIVRE", 
-          tripId: undefined 
-        };
-      }
-      return preBox;
-    }));
-    
-    // Close the modal after deletion
-    setShowModal(false);
-    setModalContent(null);
+    try {
+      await axios.delete(`/api/trips/${tripId}`);
+      setTrips(prev => prev.filter(trip => trip.id !== tripId));
+      setPreBoxes(prev => prev.map(preBox => {
+        if (preBox.id === tripToDelete.preBox && preBox.status === "VIAGEM") {
+          return { ...preBox, status: "LIVRE", tripId: undefined };
+        }
+        return preBox;
+      }));
+      setShowModal(false);
+      setModalContent(null);
+    } catch (err) {
+      setError("Erro ao deletar viagem.");
+    }
   };
 
   // Show confirmation modal

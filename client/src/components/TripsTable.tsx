@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import * as React from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTrip } from "../contexts/TripContext";
 import StatusBadge from "./StatusBadge";
 import { PlusIcon, X, Edit, Check, Keyboard } from "lucide-react";
@@ -48,21 +49,23 @@ const TripsTable: React.FC = () => {
         setShowCreateForm(true);
         setCreateDirectToBoxD(false);
       }
-      
       // Alt+B: Nova viagem direto para BOX-D
       if (e.altKey && e.key === 'b') {
         e.preventDefault();
         setShowCreateForm(true);
         setCreateDirectToBoxD(true);
       }
-      
-      // Esc: Fechar formulário
-      if (e.key === 'Escape' && showCreateForm) {
-        e.preventDefault();
-        setShowCreateForm(false);
-        setCreateDirectToBoxD(false);
+      // Esc: Fechar formulário OU fechar atalhos
+      if (e.key === 'Escape') {
+        if (showCreateForm) {
+          e.preventDefault();
+          setShowCreateForm(false);
+          setCreateDirectToBoxD(false);
+        } else if (showShortcuts) {
+          e.preventDefault();
+          setShowShortcuts(false);
+        }
       }
-      
       // Alt+F: Focar na busca
       if (e.altKey && e.key === 'f') {
         e.preventDefault();
@@ -71,7 +74,6 @@ const TripsTable: React.FC = () => {
           searchInput.focus();
         }
       }
-      
       // Alt+?: Mostrar/esconder legenda de atalhos
       if (e.altKey && e.key === '/') {
         e.preventDefault();
@@ -187,14 +189,14 @@ const TripsTable: React.FC = () => {
     setEditValue("");
   };
 
-  // Filtrar viagens com base no termo de pesquisa
-  const filteredTrips = trips.filter(trip => {
+  // Memoização da lista filtrada
+  const filteredTrips = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    return trips.filter(trip =>
       trip.id.toLowerCase().includes(searchLower) ||
       trip.oldTrip.toLowerCase().includes(searchLower)
     );
-  });
+  }, [trips, searchTerm]);
   
   // Função para lidar com seleção de viagens para edição em massa
   const handleTripSelection = (tripId: string) => {
@@ -312,7 +314,7 @@ const TripsTable: React.FC = () => {
             className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             placeholder="Pesquisar por número de viagem ou viagem antiga..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
@@ -656,14 +658,7 @@ const TripsTable: React.FC = () => {
                 <table className="w-full divide-y divide-gray-200" style={{ tableLayout: "fixed" }}>
                   <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "3%" }}>
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          checked={selectAll}
-                          onChange={handleSelectAll}
-                        />
-                      </th>
+                      {/* Removido o cabeçalho do checkbox */}
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ width: "10%" }}>
                         Data / Hora
                       </th>
@@ -701,16 +696,8 @@ const TripsTable: React.FC = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredTrips.length > 0 ? (
-                      filteredTrips.map(trip => (
-                        <tr key={trip.id} className={selectedTrips.includes(trip.id) ? "bg-blue-50" : ""}>
-                          <td className="px-3 py-4 whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                              checked={selectedTrips.includes(trip.id)}
-                              onChange={() => handleTripSelection(trip.id)}
-                            />
-                          </td>
+                      filteredTrips.map((trip: any, rowIdx: number) => (
+                        <tr key={trip.id}>
                           {/* Data/Hora */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
@@ -718,7 +705,7 @@ const TripsTable: React.FC = () => {
                                 type="text"
                                 className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
                                 value={trip.date}
-                                onChange={(e) => handleDirectEdit(e, trip.id, 'date')}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDirectEdit(e, trip.id, 'date')}
                               />
                             </div>
                             <div>
@@ -726,39 +713,19 @@ const TripsTable: React.FC = () => {
                                 type="text"
                                 className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
                                 value={trip.time}
-                                onChange={(e) => handleDirectEdit(e, trip.id, 'time')}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleDirectEdit(e, trip.id, 'time')}
                               />
                             </div>
                           </td>
-                          
                           {/* Viagem */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {editingCell?.tripId === trip.id && editingCell?.field === 'id' ? (
-                              <div className="flex items-center">
-                                <input 
-                                  type="text"
-                                  className="block w-full py-1 px-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
-                                />
-                                <div className="ml-2 flex space-x-1">
-                                  <button onClick={saveEdit} className="text-green-600"><Check size={16} /></button>
-                                  <button onClick={cancelEdit} className="text-red-600"><X size={16} /></button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-center">
-                                <input 
-                                  type="text"
-                                  className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
-                                  value={trip.id}
-                                  onChange={(e) => handleDirectEdit(e, trip.id, 'id')}
-                                />
-                              </div>
-                            )}
+                            <input 
+                              type="text"
+                              className="block w-full py-1 px-2 border-none focus:ring-0 sm:text-sm"
+                              value={trip.id}
+                              onChange={(e) => handleDirectEdit(e, trip.id, 'id')}
+                            />
                           </td>
-                          
                           {/* Viagem Antiga */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input 
@@ -768,7 +735,6 @@ const TripsTable: React.FC = () => {
                               onChange={(e) => handleDirectEdit(e, trip.id, 'oldTrip')}
                             />
                           </td>
-                          
                           {/* PRE-BOX */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input 
@@ -779,7 +745,6 @@ const TripsTable: React.FC = () => {
                               readOnly
                             />
                           </td>
-                          
                           {/* BOX-D */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input 
@@ -790,7 +755,6 @@ const TripsTable: React.FC = () => {
                               placeholder="BOX-D"
                             />
                           </td>
-                          
                           {/* Quantidade */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input 
@@ -800,7 +764,6 @@ const TripsTable: React.FC = () => {
                               onChange={(e) => handleDirectEdit(e, trip.id, 'quantity')}
                             />
                           </td>
-                          
                           {/* Turno */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="relative" style={{ maxWidth: '80px', margin: '0 auto' }}>
@@ -823,7 +786,6 @@ const TripsTable: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          
                           {/* Região */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="relative" style={{ maxWidth: '80px', margin: '0 auto' }}>
@@ -849,7 +811,6 @@ const TripsTable: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          
                           {/* Status */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="relative" style={{ maxWidth: '150px', margin: '0 auto' }}>
@@ -872,7 +833,6 @@ const TripsTable: React.FC = () => {
                               </div>
                             </div>
                           </td>
-                          
                           {/* Data Prev. do Manifesto */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <input 
@@ -883,7 +843,6 @@ const TripsTable: React.FC = () => {
                               placeholder="Data do Manifesto"
                             />
                           </td>
-                          
                           {/* Ações */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <button
@@ -897,7 +856,7 @@ const TripsTable: React.FC = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
+                        <td colSpan={12} className="px-6 py-4 text-center text-gray-500">
                           Nenhuma viagem encontrada.
                         </td>
                       </tr>

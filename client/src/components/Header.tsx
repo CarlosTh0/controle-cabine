@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 interface HeaderProps {
-  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios";
-  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "sistemaCargas" | "estatisticas" | "usuarios") => void;
+  activeSection: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "usuarios";
+  setActiveSection: (section: "dashboard" | "preBoxes" | "trips" | "painelCargas" | "resumo" | "usuarios") => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
@@ -40,28 +40,16 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
                 Viagens
               </button>
               <button 
-                onClick={() => setActiveSection("painelCargas")}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-              >
-                Painel de Cargas
-              </button>
-              <button 
                 onClick={() => setActiveSection("resumo")}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "resumo" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
               >
                 Resumo
               </button>
               <button 
-                onClick={() => setActiveSection("sistemaCargas")}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
+                onClick={() => setActiveSection("painelCargas")}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
               >
-                Sistema de Cargas
-              </button>
-              <button 
-                onClick={() => setActiveSection("estatisticas")}
-                className={`px-3 py-2 rounded-md text-sm font-medium ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-600"}`}
-              >
-                Estatísticas
+                Painel de Cargas
               </button>
               <button 
                 onClick={() => setActiveSection("usuarios")}
@@ -118,15 +106,6 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
             </button>
             <button 
               onClick={() => {
-                setActiveSection("painelCargas");
-                setMobileMenuOpen(false);
-              }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
-            >
-              Painel de Cargas
-            </button>
-            <button 
-              onClick={() => {
                 setActiveSection("resumo");
                 setMobileMenuOpen(false);
               }}
@@ -136,21 +115,12 @@ const Header: React.FC<HeaderProps> = ({ activeSection, setActiveSection }) => {
             </button>
             <button 
               onClick={() => {
-                setActiveSection("sistemaCargas");
+                setActiveSection("painelCargas");
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "sistemaCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
+              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "painelCargas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
             >
-              Sistema de Cargas
-            </button>
-            <button 
-              onClick={() => {
-                setActiveSection("estatisticas");
-                setMobileMenuOpen(false);
-              }}
-              className={`block w-full px-3 py-2 rounded-md text-base font-medium mb-1 ${activeSection === "estatisticas" ? "bg-blue-800 text-white" : "text-blue-100 hover:bg-blue-700"}`}
-            >
-              Estatísticas
+              Painel de Cargas
             </button>
             <button 
               onClick={() => {
